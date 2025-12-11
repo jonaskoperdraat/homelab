@@ -8,27 +8,38 @@
         name: argocd
         state: present
 
-    - name: Check if this is the first installation
-      kubernetes.core.k8s_info:
-        kind: Pod
-        label_selectors:
-          - app.kubernetes.io/instance=gitea
-        field_selectors:
-          - status.phase=Running
-      register: first_install
+#    - name: Check if this is the first installation
+#      kubernetes.core.k8s_info:
+#        kind: Pod
+#        label_selectors:
+#          - app.kubernetes.io/instance=gitea
+#        field_selectors:
+#          - status.phase=Running
+#      register: first_install
 
-    - name: Render ArgoCD manifests from Helm chart
+    - name: Render ArgoCD System manifests from Helm chart
       kubernetes.core.helm_template:
         chart_ref: ./argocd
         include_crds: true
-        release_name: argocd
+        release_name: argocd-system
         release_namespace: argocd
         dependency_update: true
         values_files:
-          - "argocd/{{ (first_install.resources | length == 0) | ternary('values-seed.yaml', 'values.yaml') }}"
+          - argocd/values.yaml
       register: argocd_manifests
 
-    - name: Apply ArgoCD manifests
+#    - name: Render ArgoCD manifests from Helm chart
+#      kubernetes.core.helm_template:
+#        chart_ref: ./argocd
+#        include_crds: true
+#        release_name: argocd
+#        release_namespace: argocd
+#        dependency_update: true
+#        values_files:
+#          - "argocd/{{ (first_install.resources | length == 0) | ternary('values-seed.yaml', 'values.yaml') }}"
+#      register: argocd_manifests
+#
+    - name: Apply ArgoCDSystem manifests
       kubernetes.core.k8s:
         resource_definition: "{{ argocd_manifests.stdout }}"
         apply: true
