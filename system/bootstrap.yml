@@ -21,7 +21,7 @@
       kubernetes.core.helm_template:
         chart_ref: ./argocd
         include_crds: true
-        release_name: argocd-system
+        release_name: argocd
         release_namespace: argocd
         dependency_update: true
         values_files:
