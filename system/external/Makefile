@@ -1,7 +1,7 @@
 .POSIX:
 
 export KUBECONFIG = $(shell pwd)/../../metal/kubeconfig.yaml
-export KUBE_CONFIG_PATH = $KUBECONFIG
+export KUBE_CONFIG_PATH = $(KUBECONFIG)
 
 default: apply
 
