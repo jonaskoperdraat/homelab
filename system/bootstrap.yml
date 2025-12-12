@@ -1,4 +1,4 @@
-- name: Bootstrapping the cluster
+- name: Bootstrapping the system layer of the cluster
   hosts: localhost
   tasks:
     - name: Create ArgoCD namespace
