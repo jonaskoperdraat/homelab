@@ -2,7 +2,14 @@
 
 export KUBECONFIG = $(shell pwd)/../metal/kubeconfig.yaml
 
-.PHONY: bootstrap
+.PHONY: *
+
+default: bootstrap external
+
 bootstrap:
 	ansible-playbook \
 		bootstrap.yml
+
+external:
+	make -C external
+

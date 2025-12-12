@@ -37,7 +37,7 @@ app-template:
     credentials:
       enabled: true
       type: secret
-      # Created by ../../external/cloudflared
+      # Created by ../external/modules/cloudflare
       name: cloudflared-credentials
       globalMounts:
         - path: /etc/cloudflared/credentials.json
