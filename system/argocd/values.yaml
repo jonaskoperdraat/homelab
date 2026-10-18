@@ -28,4 +28,7 @@ argo-cd:
   repoServer:
     metrics: *metrics
   redis:
+    # The metrics Service needs the exporter sidecar to have a target
+    exporter:
+      enabled: true
     metrics: *metrics
