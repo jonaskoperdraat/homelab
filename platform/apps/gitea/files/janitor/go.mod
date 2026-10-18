@@ -1,4 +1,4 @@
-module git.jonaskoperdraat.nl/ops/homelab/gitea
+module git.127-0-0-1.nip.io/ops/homelab/gitea
 
 go 1.25.0
 

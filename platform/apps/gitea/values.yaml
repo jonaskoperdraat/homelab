@@ -5,7 +5,7 @@ gitea:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
-      - host: &host git.jonaskoperdraat.nl
+      - host: &host git.127-0-0-1.nip.io
         paths:
           - path: /
             pathType: Prefix
@@ -19,7 +19,7 @@ gitea:
     config:
       server:
         LANDING_PAGE: explore
-        ROOT_URL: https://git.jonaskoperdraat.nl
+        ROOT_URL: https://git.127-0-0-1.nip.io
         OFFLINE_MODE: true
       repository:
         DISABLED_REPO_UNITS: repo.wiki,repo.projects,repo.packages
@@ -44,5 +44,5 @@ gitea:
 dexLoginSource:
   name: Dex
   existingSecret: gitea-oauth-dex
-  autoDiscoverUrl: https://dex.jonaskoperdraat.nl/.well-known/openid-configuration
+  autoDiscoverUrl: https://dex.127-0-0-1.nip.io/.well-known/openid-configuration
   kubectlImage: docker.io/alpine/k8s:1.36.5

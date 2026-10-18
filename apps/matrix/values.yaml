@@ -5,7 +5,7 @@ elementweb:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
-      - host: &frontend_host chat.jonaskoperdraat.nl
+      - host: &frontend_host chat.127-0-0-1.nip.io
         paths:
           - path: /
             pathType: Prefix
@@ -15,22 +15,22 @@ elementweb:
           - *frontend_host
   config:
     default:
-      base_url: https://matrix.jonaskoperdraat.nl
-      server_name: jonaskoperdraat.nl
+      base_url: https://matrix.127-0-0-1.nip.io
+      server_name: 127-0-0-1.nip.io
 
 dendrite:
   dendrite_config:
     global:
-      server_name: matrix.jonaskoperdraat.nl
+      server_name: matrix.127-0-0-1.nip.io
   ingress:
     enabled: true
     className: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostName: matrix.jonaskoperdraat.nl
+    hostName: matrix.127-0-0-1.nip.io
     tls:
       - hosts:
-          - matrix.jonaskoperdraat.nl
+          - matrix.127-0-0-1.nip.io
         secretName: matrix-tls-certificate
   postgresql:
     enabled: true

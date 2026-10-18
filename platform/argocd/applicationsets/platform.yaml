@@ -7,7 +7,7 @@ spec:
   generators:
     - git:
         repoURL: &repoURL https://github.com/jonaskoperdraat/homelab
-        revision: &revision master
+        revision: &revision dev
         directories:
           - path: platform/apps/*
   template:

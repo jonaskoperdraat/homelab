@@ -15,19 +15,19 @@ import (
 )
 
 /*
-Oauth2AppRequestHandler monitors kubernetes secrets, for secrets with label git.jonaskoperdraat.nl/request=oauth2-app.
+Oauth2AppRequestHandler monitors kubernetes secrets, for secrets with label git.127-0-0-1.nip.io/request=oauth2-app.
 If a secret with said label changes, this handler will create a OAuth2 app in the Gitea administrator account
 and updates the secret with the client id and secret. This way, another application can request client id and secret,
 without having to give the admin credentials to the app for its deployment
 
 The secret must have the following annotations:
-  - git.jonaskoperdraat.nl/request-oauth2-app-name: the name of the app
-  - git.jonaskoperdraat.nl/request-oauth2-app-redirect-url: the redirect url for the app
-  - git.jonaskoperdraat.nl/request-oauth2-app-client-id-data-key: the key to store the client id in the secret's data field
-  - git.jonaskoperdraat.nl/request-oauth2-app-client-secret-data-key: the key to store the client secret in the secret's data field
+  - git.127-0-0-1.nip.io/request-oauth2-app-name: the name of the app
+  - git.127-0-0-1.nip.io/request-oauth2-app-redirect-url: the redirect url for the app
+  - git.127-0-0-1.nip.io/request-oauth2-app-client-id-data-key: the key to store the client id in the secret's data field
+  - git.127-0-0-1.nip.io/request-oauth2-app-client-secret-data-key: the key to store the client secret in the secret's data field
 
 If a client with the given name, but a different redirect url already exists, it will be deleted and replaced with a new one.
-This handler stores a hash with the secret (annotation git.jonaskoperdraat.nl/processed-hash) in order to determine if the secret
+This handler stores a hash with the secret (annotation git.127-0-0-1.nip.io/processed-hash) in order to determine if the secret
 needs to be processed again. The secret can be rotated by deleting this annotation.
 */
 type Oauth2AppRequestHandler struct{}

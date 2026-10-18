@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-const host = "git.jonaskoperdraat.nl"
+const host = "git.127-0-0-1.nip.io"
 const requestBase = host + "/request"
 const annProcessedHash = host + "/processed-hash"
 

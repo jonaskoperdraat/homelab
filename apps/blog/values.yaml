@@ -4,7 +4,7 @@ app-template:
       containers:
         main:
           image:
-            repository: registry.jonaskoperdraat.nl/blog
+            repository: registry.127-0-0-1.nip.io/blog
             tag: latest
   service:
     main:
@@ -19,7 +19,7 @@ app-template:
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       hosts:
-        - host: &host www.jonaskoperdraat.nl
+        - host: &host www.127-0-0-1.nip.io
           paths:
             - path: /
               pathType: Prefix

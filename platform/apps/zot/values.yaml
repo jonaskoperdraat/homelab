@@ -9,7 +9,7 @@ zot:
       nginx.ingress.kubernetes.io/proxy-body-size: "0"
     className: nginx
     hosts:
-      - host: &host registry.jonaskoperdraat.nl
+      - host: &host registry.127-0-0-1.nip.io
         paths:
           - path: /
     tls:
