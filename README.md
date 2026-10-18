@@ -52,7 +52,7 @@ More information can be found in [the roadmap](#roadmap) below.
 - [x] Automated certificate management
 - [x] Automatically update DNS records for exposed services
 - [x] VPN (Tailscale or Wireguard)
-- [x] Expose services to the internet securely with [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/)
+- [ ] Expose services to the internet via a VPS (Headscale + WireGuard), replacing Cloudflare Tunnel
 - [x] CI/CD platform
 - [x] Private container registry
 - [x] Distributed storage
