@@ -1,4 +1,7 @@
 zot:
+  image:
+    # Multi-arch image instead of the chart's default zot-linux-amd64
+    repository: ghcr.io/project-zot/zot
   ingress:
     enabled: true
     annotations:
