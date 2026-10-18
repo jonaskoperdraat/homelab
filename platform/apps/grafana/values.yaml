@@ -18,6 +18,20 @@ grafana:
       enabled: true
       searchNamespace: monitoring-system
   envFromSecret: grafana-secrets
+  # dev: trust the dev CA (ca.crt of our own ingress certificate)
+  env:
+    SSL_CERT_DIR: /dev-ca
+  extraVolumes:
+    - name: dev-ca
+      secret:
+        secretName: grafana-general-tls
+        items:
+          - key: ca.crt
+            path: ca.crt
+  extraVolumeMounts:
+    - name: dev-ca
+      mountPath: /dev-ca
+      readOnly: true
   grafana.ini:
     server:
       root_url: https://grafana.127-0-0-1.nip.io

@@ -13,6 +13,21 @@ gitea:
       - secretName: gitea-tls-certificate
         hosts:
           - *host
+  # dev: trust the dev CA (ca.crt of our own ingress certificate)
+  deployment:
+    env:
+      - name: SSL_CERT_DIR
+        value: /dev-ca
+  extraVolumes:
+    - name: dev-ca
+      secret:
+        secretName: gitea-tls-certificate
+        items:
+          - key: ca.crt
+            path: ca.crt
+  extraContainerVolumeMounts:
+    - name: dev-ca
+      mountPath: /dev-ca
   gitea:
     admin:
       existingSecret: gitea-admin-secret
