@@ -19,7 +19,7 @@ app-template:
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       hosts:
-        - host: &host home.yona.works
+        - host: &host home.jonaskoperdraat.nl
           paths:
             - path: /
               pathType: Prefix
@@ -61,76 +61,76 @@ app-template:
         services.yaml: |
           - Popular:
             - Matrix:
-                href: https://chat.yona.works
+                href: https://chat.jonaskoperdraat.nl
                 description: Chat client
                 icon: element.svg
             - Jellyfin:
-                href: https://jellyfin.yona.works
+                href: https://jellyfin.jonaskoperdraat.nl
                 description: Media system (movies, music, etc.)
                 icon: jellyfin.svg
             - Jellyseerr:
-                href: https://jellyseerr.yona.works
+                href: https://jellyseerr.jonaskoperdraat.nl
                 description: Request media
                 icon: jellyseerr.svg
             - Paperless:
-                href: https://paperless.yona.works
+                href: https://paperless.jonaskoperdraat.nl
                 description: Document management system
                 icon: paperless.svg
           - Management:
             - Transmission:
-                href: https://transmission.yona.works
+                href: https://transmission.jonaskoperdraat.nl
                 description: Bittorrent client
                 icon: transmission.svg
             - Prowlarr:
-                href: https://prowlarr.yona.works
+                href: https://prowlarr.jonaskoperdraat.nl
                 description: Indexer manager
                 icon: prowlarr.svg
             - Radarr:
-                href: https://radarr.yona.works
+                href: https://radarr.jonaskoperdraat.nl
                 description: Movie manager
                 icon: radarr.svg
             - Sonarr:
-                href: https://sonarr.yona.works
+                href: https://sonarr.jonaskoperdraat.nl
                 description: TV show manager
                 icon: sonarr.svg
             - Kanidm:
-                href: https://auth.yona.works
+                href: https://auth.jonaskoperdraat.nl
                 description: Identity management
-                icon: https://auth.yona.works/pkg/img/logo-square.svg
+                icon: https://auth.jonaskoperdraat.nl/pkg/img/logo-square.svg
           - Development:
             - Gitea:
-                href: https://git.yona.works
+                href: https://git.jonaskoperdraat.nl
                 description: Git forge
                 icon: gitea.svg
             - Woodpecker:
-                href: https://ci.yona.works
+                href: https://ci.jonaskoperdraat.nl
                 description: Continuous integration
                 icon: woodpecker-ci.svg
             - ArgoCD:
-                href: https://argocd.yona.works
+                href: https://argocd.jonaskoperdraat.nl
                 description: Continuous deployment
                 icon: argocd.svg
             - Registry:
-                href: https://registry.yona.works
+                href: https://registry.jonaskoperdraat.nl
                 description: Container registry
                 icon: docker.svg
             - Grafana:
-                href: https://grafana.yona.works
+                href: https://grafana.jonaskoperdraat.nl
                 description: Observability dashboards
                 icon: grafana.svg
           - Utilities:
             - Excalidraw:
-                href: https://draw.yona.works
+                href: https://draw.jonaskoperdraat.nl
                 description: Virtual whiteboard
                 icon: excalidraw.svg
             - Speedtest:
-                href: https://speedtest.yona.works
+                href: https://speedtest.jonaskoperdraat.nl
                 description: Internal network speed test
                 icon: openspeedtest.png
         bookmarks.yaml: |
           - Homelab:
             - Documentation:
-              - href: https://homelab.yona.works
+              - href: https://homelab.jonaskoperdraat.nl
                 icon: google-docs.svg
             - Public homelab repository:
               - href: https://github.com/jonaskoperdraat/homelab

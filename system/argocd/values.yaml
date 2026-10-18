@@ -1,6 +1,6 @@
 argo-cd:
   global:
-    domain: argocd.yona.works
+    domain: argocd.jonaskoperdraat.nl
   configs:
     params:
       server.insecure: true

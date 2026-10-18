@@ -67,7 +67,7 @@ app-template:
                   [Peer]
                   # horus
                   PublicKey = zVwYqwvGn/IL7o6CD84y4/Y/OnRAUl/jw6T7DtNqWGM=
-                  Endpoint = horus.yona.works:51820
+                  Endpoint = horus.jonaskoperdraat.nl:51820
                   PersistentKeepalive = 25
                   AllowedIPs = 172.16.0.2/32
 

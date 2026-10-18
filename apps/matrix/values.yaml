@@ -4,10 +4,10 @@ elementweb:
     className: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-      external-dns.alpha.kubernetes.io/target: "homelab-tunnel.yona.works"
+      external-dns.alpha.kubernetes.io/target: "homelab-tunnel.jonaskoperdraat.nl"
       external-dns.alpha.kubernetes.io/cloudflare-proxied: "true"
     hosts:
-      - host: &frontend_host chat.yona.works
+      - host: &frontend_host chat.jonaskoperdraat.nl
         paths:
           - path: /
             pathType: Prefix
@@ -17,22 +17,22 @@ elementweb:
           - *frontend_host
   config:
     default:
-      base_url: https://matrix.yona.works
-      server_name: yona.works
+      base_url: https://matrix.jonaskoperdraat.nl
+      server_name: jonaskoperdraat.nl
 
 dendrite:
   dendrite_config:
     global:
-      server_name: matrix.yona.works
+      server_name: matrix.jonaskoperdraat.nl
   ingress:
     enabled: true
     className: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostName: matrix.yona.works
+    hostName: matrix.jonaskoperdraat.nl
     tls:
       - hosts:
-          - matrix.yona.works
+          - matrix.jonaskoperdraat.nl
         secretName: matrix-tls-certificate
   postgresql:
     enabled: true

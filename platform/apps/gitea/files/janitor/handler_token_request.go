@@ -16,18 +16,18 @@ import (
 )
 
 /*
-TokenRequestHandler monitors kubernetes secrets, for secrets with label git.yona.works/request=access-token.
+TokenRequestHandler monitors kubernetes secrets, for secrets with label git.jonaskoperdraat.nl/request=access-token.
 If a secret with said label changes, this handler will create a token in the Gitea administrator account
 and updates the secret with the token value. This way, another application can request a token with access,
 without having to give the admin credentials to the app for its deployment
 
 The secret must have the following annotations:
-  - git.yona.works/request-access-token-name: the name of the token to create
-  - git.yona.works/request-access-token-scopes: a comma-separated list of scopes to request.
+  - git.jonaskoperdraat.nl/request-access-token-name: the name of the token to create
+  - git.jonaskoperdraat.nl/request-access-token-scopes: a comma-separated list of scopes to request.
     See: https://docs.gitea.com/next/development/api-usage#token-api for documentation on token scopes.
 
 If a token with the given name, but different scopes already exists, it will be deleted and replaced with a new one.
-This handler stores a hash with the secret (annotation git.yona.works/processed-hash) in order to determine if the secret
+This handler stores a hash with the secret (annotation git.jonaskoperdraat.nl/processed-hash) in order to determine if the secret
 needs to be processed again. The secret can be rotated by deleting this annotation.
 */
 type TokenRequestHandler struct{}
@@ -88,19 +88,19 @@ func (h *TokenRequestHandler) Start(k8sClient *kubernetes.Clientset, giteaClient
 func (h *TokenRequestHandler) handle(k8sClient *kubernetes.Clientset, giteaClient *gitea.Client, secret *corev1.Secret) error {
 	fmt.Printf("Handling Token Request for secret: %s/%s\n", secret.Namespace, secret.Name)
 
-	// git.yona.works/request/access-token/name=<string>
-	// git.yona.works/request/access-token/permissions=scope[,...]
+	// git.jonaskoperdraat.nl/request/access-token/name=<string>
+	// git.jonaskoperdraat.nl/request/access-token/permissions=scope[,...]
 
 	name := secret.Annotations[annTokenName]
 	// name should be a valid identifier, e.g., alphanumeric with hyphens
 	if name == "" {
-		return fmt.Errorf("missing required annotation 'git.yona.works/request-access-token-name'")
+		return fmt.Errorf("missing required annotation 'git.jonaskoperdraat.nl/request-access-token-name'")
 	}
 
 	scopesStr := secret.Annotations[annTokenScopes]
 	// permissions should be present
 	if scopesStr == "" {
-		return fmt.Errorf("missing required annotation 'git.yona.works/request-access-token-scopes'")
+		return fmt.Errorf("missing required annotation 'git.jonaskoperdraat.nl/request-access-token-scopes'")
 	}
 	// split permissions into a map of routes to read/write permissions
 	scopes := parseScopes(scopesStr)

@@ -19,7 +19,7 @@ app-template:
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       hosts:
-        - host: &host budget.yona.works
+        - host: &host budget.jonaskoperdraat.nl
           paths:
             - path: /
               pathType: Prefix

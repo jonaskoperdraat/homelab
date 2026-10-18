@@ -9,9 +9,9 @@ app-template:
           env:
             PAPERLESS_PORT: 8000
             PAPERLESS_ADMIN_USER: admin
-            PAPERLESS_URL: https://paperless.yona.works
+            PAPERLESS_URL: https://paperless.jonaskoperdraat.nl
             PAPERLESS_APP_TITLE: Papierloos
-            PAPERLESS_OAUTH_CALLBACK_BASE_URL: https://paperless.yona.works
+            PAPERLESS_OAUTH_CALLBACK_BASE_URL: https://paperless.jonaskoperdraat.nl
           envFrom:
             - secret: "{{ .Release.Name }}-secret"
         redis:
@@ -31,7 +31,7 @@ app-template:
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       hosts:
-        - host: &host paperless.yona.works
+        - host: &host paperless.jonaskoperdraat.nl
           paths:
             - path: /
               pathType: Prefix

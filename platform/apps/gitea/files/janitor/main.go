@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-const host = "git.yona.works"
+const host = "git.jonaskoperdraat.nl"
 const requestBase = host + "/request"
 const annProcessedHash = host + "/processed-hash"
 

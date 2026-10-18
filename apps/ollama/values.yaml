@@ -33,14 +33,14 @@ app-template:
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       hosts:
-        - host: &ollamaHost ollama.yona.works
+        - host: &ollamaHost ollama.jonaskoperdraat.nl
           paths:
             - path: /
               pathType: Prefix
               service:
                 name: main
                 port: http
-        - host: &uiHost ai.yona.works
+        - host: &uiHost ai.jonaskoperdraat.nl
           paths:
             - path: /
               pathType: Prefix

@@ -1,4 +1,4 @@
-module git.yona.works/khuedoan/homelab/gitea/config
+module git.jonaskoperdraat.nl/khuedoan/homelab/gitea/config
 //
 //go 1.25.0
 //

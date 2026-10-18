@@ -1,4 +1,4 @@
-module git.yona.works/ops/homelab/gitea
+module git.jonaskoperdraat.nl/ops/homelab/gitea
 
 go 1.25.0
 
