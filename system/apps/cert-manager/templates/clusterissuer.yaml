@@ -9,7 +9,12 @@ spec:
       name: letsencrypt-prod
     solvers:
     - dns01:
-        cloudflare:
-          apiTokenSecretRef:
-            name: cloudflare-api-token
-            key: api-token
+        webhook:
+          groupName: {{ index .Values "cert-manager-webhook-transip" "groupName" }}
+          solverName: transip
+          config:
+            accountName: {{ .Values.transip.accountName }}
+            ttl: 300
+            privateKeySecretRef:
+              name: transip-credentials
+              key: private-key

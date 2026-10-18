@@ -44,15 +44,3 @@
         server_side_apply:
           field_manager: argocd-controller
 
-    - name: Wait for external-dns to be ready
-      kubernetes.core.k8s_info:
-        kind: Deployment
-        name: "{{ item.name }}"
-        namespace: "{{ item.namespace }}"
-      loop:
-        - name: external-dns
-          namespace: external-dns
-      register: deploys
-      until: deploys.resources[0].status.readyReplicas | default(0) >= 1
-      retries: 30
-      delay: 10

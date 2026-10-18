@@ -1,12 +1,8 @@
-variable "cloudflare_email" {
-  type = string
-}
+variable "transip" {
+  type = object({
+    account_name = string
+    private_key  = string
+  })
 
-variable "cloudflare_api_key" {
-  type      = string
   sensitive = true
-}
-
-variable "cloudflare_account_id" {
-  type = string
 }

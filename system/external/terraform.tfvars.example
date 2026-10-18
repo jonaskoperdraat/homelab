@@ -1,6 +1,10 @@
-# https://dash.cloudflare.com/profile
-cloudflare_email = "myaccount@example.com"
-# https://developers.cloudflare.com/fundamentals/setup/find-account-and-zone-ids
-cloudflare_account_id = "foobarid"
-# https://dash.cloudflare.com/profile/api-tokens
-cloudflare_api_key = "foobarkey"
+# https://www.transip.nl/cp/account/api/
+# Generate a key pair (without IP whitelisting, or whitelist your home IP)
+transip = {
+  account_name = "myaccount"
+  private_key  = <<-EOT
+    -----BEGIN PRIVATE KEY-----
+    ...
+    -----END PRIVATE KEY-----
+  EOT
+}

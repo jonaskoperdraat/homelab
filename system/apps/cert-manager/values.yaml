@@ -4,3 +4,15 @@ cert-manager:
     enabled: true
     servicemonitor:
       enabled: true
+
+cert-manager-webhook-transip:
+  groupName: acme.jonaskoperdraat.nl
+  certManager:
+    namespace: cert-manager
+    serviceAccountName: cert-manager
+  secretName:
+    # Created by ../../external/modules/transip
+    - transip-credentials
+
+transip:
+  accountName: jkoper
