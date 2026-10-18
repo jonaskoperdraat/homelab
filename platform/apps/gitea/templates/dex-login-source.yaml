@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dex-login-source
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dex-login-source
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    resourceNames: ["gitea"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dex-login-source
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dex-login-source
+subjects:
+  - kind: ServiceAccount
+    name: dex-login-source
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dex-login-source
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      serviceAccountName: dex-login-source
+      restartPolicy: Never
+      containers:
+        - name: configure
+          image: {{ .Values.dexLoginSource.kubectlImage }}
+          command:
+            - bash
+            - -euc
+            - |
+              gitea() {
+                kubectl -n {{ .Release.Namespace }} exec deploy/gitea -c gitea -- gitea "$@"
+              }
+              args=(
+                --name "$NAME"
+                --provider openidConnect
+                --key "$(cat /secret/key)"
+                --secret "$(cat /secret/secret)"
+                --auto-discover-url "$AUTO_DISCOVER_URL"
+              )
+              # Gitea validates the discovery URL, so retry until Dex is up
+              for i in $(seq 60); do
+                # Same parsing as the Gitea chart's configure_oauth
+                id=$(gitea admin auth list --vertical-bars \
+                  | sed -n '/^ID[[:space:]]*|Name/,$p' | tail -n+2 \
+                  | grep -E "\|${NAME}[[:space:]]+\|" | grep -iE '\|OAuth2[[:space:]]+\|' \
+                  | awk '{print $1}') || true
+                if [ -z "$id" ]; then
+                  gitea admin auth add-oauth "${args[@]}" && exit 0
+                else
+                  gitea admin auth update-oauth --id "$id" "${args[@]}" && exit 0
+                fi
+                sleep 10
+              done
+              echo "Unable to configure the ${NAME} login source" >&2
+              exit 1
+          env:
+            - name: NAME
+              value: {{ .Values.dexLoginSource.name }}
+            - name: AUTO_DISCOVER_URL
+              value: {{ .Values.dexLoginSource.autoDiscoverUrl }}
+          volumeMounts:
+            - name: secret
+              mountPath: /secret
+              readOnly: true
+      volumes:
+        - name: secret
+          secret:
+            secretName: {{ .Values.dexLoginSource.existingSecret }}

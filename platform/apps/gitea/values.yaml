@@ -16,11 +16,6 @@ gitea:
   gitea:
     admin:
       existingSecret: gitea-admin-secret
-    oauth:
-      - name: Dex
-        provider: openidConnect
-        existingSecret: gitea-oauth-dex
-        autoDiscoverUrl: https://dex.jonaskoperdraat.nl/.well-known/openid-configuration
     config:
       server:
         LANDING_PAGE: explore
@@ -42,3 +37,12 @@ gitea:
         ENABLED: false
       webhook:
         ALLOWED_HOST_LIST: private
+
+# Configured by templates/dex-login-source.yaml instead of gitea.gitea.oauth,
+# because the chart's init container would block Gitea from starting while
+# Dex is unreachable.
+dexLoginSource:
+  name: Dex
+  existingSecret: gitea-oauth-dex
+  autoDiscoverUrl: https://dex.jonaskoperdraat.nl/.well-known/openid-configuration
+  kubectlImage: docker.io/alpine/k8s:1.36.5
