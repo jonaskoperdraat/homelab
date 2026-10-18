@@ -11,3 +11,6 @@ spec:
     name: kanidm-selfsigned
   dnsNames:
     - home.arpa
+    # Used by in-cluster clients like oauth2-secret-export
+    - kanidm.{{ .Release.Namespace }}.svc
+    - kanidm.{{ .Release.Namespace }}.svc.cluster.local
