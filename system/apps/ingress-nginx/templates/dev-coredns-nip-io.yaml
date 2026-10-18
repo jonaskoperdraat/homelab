@@ -9,6 +9,7 @@ data:
   nip-io.server: |
     127-0-0-1.nip.io:53 {
       errors
-      rewrite name regex (.*)\.127-0-0-1\.nip\.io ingress-nginx-controller.{{ .Release.Namespace }}.svc.cluster.local answer auto
-      forward . 127.0.0.1:53
+      rewrite name regex (.*)\.127-0-0-1\.nip\.io\.$ ingress-nginx-controller.{{ .Release.Namespace }}.svc.cluster.local. answer auto
+      # Resolve the rewritten name here; forwarding to ourselves would loop
+      kubernetes cluster.local
     }
