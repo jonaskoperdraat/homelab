@@ -16,8 +16,7 @@ dex:
           clientSecret: $KANIDM_CLIENT_SECRET
           redirectURI: https://dex.jonaskoperdraat.nl/callback
           issuer: https://auth.jonaskoperdraat.nl/oauth2/openid/dex
-          # TODO https://github.com/dexidp/dex/pull/3188
-          # enablePKCE: true
+          pkceChallenge: S256
           scopes:
             - openid
             - profile
