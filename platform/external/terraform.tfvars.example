@@ -17,4 +17,7 @@ extra_secrets = {
   # restic-s3-bucket = "https://s3.amazonaws.com/my-homelab-backup-xxxxxxxxxx"
   # restic-s3-access-key = "xxxxxxxxxxxxxxxx"
   # restic-s3-secret-key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  # Required by application/apps/paperless (Gmail mail fetching)
+  paperless-gmail-oauth-client-id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com"
+  paperless-gmail-oauth-client-secret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 }
