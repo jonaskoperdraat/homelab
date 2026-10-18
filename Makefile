@@ -5,7 +5,7 @@
 KUBECONFIG = $(shell pwd)/metal/kubeconfig.yaml
 KUBE_CONFIG_PATH = $(KUBECONFIG)
 
-default: metal system platform application smoke-test post-install clean
+default: metal system platform application smoke-test clean
 
 configure:
 	./scripts/configure
@@ -25,9 +25,6 @@ application:
 
 smoke-test:
 	make -C test filter=Smoke
-
-post-install:
-	@./scripts/hacks
 
 # TODO maybe there's a better way to manage backup with GitOps?
 backup:

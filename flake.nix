@@ -2,7 +2,7 @@
   description = "Homelab";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-25.11-darwin";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -26,11 +26,10 @@
             glibcLocales
             go
             gotestsum
-            iproute2
+            iproute2mac
             jq
             k9s
-            kanidm
-            kube3d
+            k3d
             kubectl
             kubernetes-helm
             kustomize
