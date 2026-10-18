@@ -1,5 +1,6 @@
 kured:
   configuration:
     annotateNodes: true
-    rebootSentinelCommand: sh -c "! needs-restarting --reboothint"
+    # Without the command check, a missing needs-restarting (exit 127) means "reboot needed"
+    rebootSentinelCommand: sh -c "command -v needs-restarting >/dev/null && ! needs-restarting --reboothint"
     timeZone: Europe/Amsterdam
