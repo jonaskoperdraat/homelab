@@ -13,6 +13,9 @@ spec:
           # Ceph can't run on a single-node k3d cluster; use k3s local-path instead
           - path: system/apps/rook-ceph
             exclude: true
+          # Rebooting a k3d node makes no sense
+          - path: system/apps/kured
+            exclude: true
   template:
     metadata:
       name: '{{path.basename}}'
