@@ -21,12 +21,15 @@
         release_namespace: argocd
         dependency_update: true
         values_files: "{{ ['argocd/values.yaml'] + query('fileglob', 'argocd/values-' + env + '.yaml') }}"
+        # Not a rewrite of the whole output: that would also rewrite the
+        # domain the helm-env plugin script looks for
+        set_values:
+          - value: argo-cd.global.domain=argocd.{{ domain }}
       register: argocd_manifests
 
     - name: Apply ArgoCDSystem manifests
       kubernetes.core.k8s:
-        # Same domain rewrite as the helm-env plugin does for all other apps
-        resource_definition: "{{ argocd_manifests.stdout | regex_replace('jonaskoperdraat\\.nl', domain) }}"
+        resource_definition: "{{ argocd_manifests.stdout }}"
         apply: true
         server_side_apply:
           field_manager: argocd-controller
