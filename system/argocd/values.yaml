@@ -5,6 +5,39 @@ argo-cd:
     params:
       server.insecure: true
       controller.diff.server.side: true
+    # Renders all apps (see the ApplicationSets): helm template like Argo CD's
+    # built-in Helm support, plus values-<environment>.yaml and the domain from
+    # environments/<env>.yml. The domain is replaced in the sources (a throwaway
+    # copy) rather than the output, so base64 data and checksums stay correct.
+    cmp:
+      create: true
+      plugins:
+        helm-env:
+          init:
+            command: [sh, -c]
+            args:
+              - helm dependency build >/dev/null
+          generate:
+            command: [sh, -c]
+            args:
+              - |
+                set -eu
+                if [ "$ARGOCD_ENV_DOMAIN" != jonaskoperdraat.nl ]; then
+                  grep -rlF --exclude-dir=charts jonaskoperdraat.nl . \
+                    | xargs -r sed -i "s/jonaskoperdraat\.nl/${ARGOCD_ENV_DOMAIN}/g"
+                fi
+                env_values=""
+                if [ -f "values-${ARGOCD_ENV_ENVIRONMENT}.yaml" ]; then
+                  env_values="--values values.yaml --values values-${ARGOCD_ENV_ENVIRONMENT}.yaml"
+                fi
+                helm template "$ARGOCD_APP_NAME" . \
+                  --namespace "$ARGOCD_APP_NAMESPACE" \
+                  --kube-version "$KUBE_VERSION" \
+                  --api-versions "$KUBE_API_VERSIONS" \
+                  --include-crds \
+                  --set-string environment="$ARGOCD_ENV_ENVIRONMENT" \
+                  --set-string domain="$ARGOCD_ENV_DOMAIN" \
+                  $env_values
     cm:
       resource.ignoreResourceUpdatesEnabled: true
       resource.customizations.ignoreResourceUpdates.all: |
@@ -27,6 +60,43 @@ argo-cd:
     metrics: *metrics
   repoServer:
     metrics: *metrics
+    extraContainers:
+      - name: helm-env
+        # Keep in sync with the chart's appVersion (Chart.yaml)
+        image: quay.io/argoproj/argocd:v3.5.5
+        command: [/var/run/argocd/argocd-cmp-server]
+        env:
+          - name: HELM_CACHE_HOME
+            value: /tmp/helm/cache
+          - name: HELM_CONFIG_HOME
+            value: /tmp/helm/config
+          - name: HELM_DATA_HOME
+            value: /tmp/helm/data
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: [ALL]
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+          - name: var-files
+            mountPath: /var/run/argocd
+          - name: plugins
+            mountPath: /home/argocd/cmp-server/plugins
+          - name: argocd-cmp-cm
+            mountPath: /home/argocd/cmp-server/config/plugin.yaml
+            subPath: helm-env.yaml
+          - name: helm-env-tmp
+            mountPath: /tmp
+    volumes:
+      - name: argocd-cmp-cm
+        configMap:
+          name: argocd-cmp-cm
+      - name: helm-env-tmp
+        emptyDir: {}
   redis:
     # The metrics Service needs the exporter sidecar to have a target
     exporter:

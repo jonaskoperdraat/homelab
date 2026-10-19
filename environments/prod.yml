@@ -1,0 +1,6 @@
+# Settings that differ per cluster. Selected with `make env=<name>`.
+# Manifests in Git always use jonaskoperdraat.nl; the helm-env Argo CD plugin
+# (system/argocd/values.yaml) rewrites it to `domain` when rendering.
+domain: jonaskoperdraat.nl
+# Apps (paths) not deployed in this environment
+excluded_apps: []

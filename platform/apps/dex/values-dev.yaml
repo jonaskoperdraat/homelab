@@ -1,0 +1,14 @@
+# dev: trust the dev CA (ca.crt of our own ingress certificate)
+dex:
+  env:
+    SSL_CERT_DIR: /dev-ca
+  volumes:
+    - name: dev-ca
+      secret:
+        secretName: dex-tls-certificate
+        items:
+          - key: ca.crt
+            path: ca.crt
+  volumeMounts:
+    - name: dev-ca
+      mountPath: /dev-ca

@@ -1,0 +1,15 @@
+# dev: trust the dev CA (ca.crt of our own ingress certificate)
+grafana:
+  env:
+    SSL_CERT_DIR: /dev-ca
+  extraVolumes:
+    - name: dev-ca
+      secret:
+        secretName: grafana-general-tls
+        items:
+          - key: ca.crt
+            path: ca.crt
+  extraVolumeMounts:
+    - name: dev-ca
+      mountPath: /dev-ca
+      readOnly: true

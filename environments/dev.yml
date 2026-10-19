@@ -1,0 +1,9 @@
+# Local k3d cluster, see metal/k3d-dev.yaml
+domain: 127-0-0-1.nip.io
+excluded_apps:
+  # Ceph can't run on a single-node k3d cluster; k3s local-path is used instead
+  - system/apps/rook-ceph
+  # Rebooting a k3d node makes no sense
+  - system/apps/kured
+  # Nothing to manage for nip.io, and no TransIP credentials on dev
+  - system/apps/external-dns

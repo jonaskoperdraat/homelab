@@ -1,0 +1,17 @@
+{{- if eq (.Values.environment | default "prod") "dev" }}
+# dev: *.127-0-0-1.nip.io resolves to 127.0.0.1, which is the pod itself
+# inside the cluster. Send it to ingress-nginx instead, like on the host.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  nip-io.server: |
+    {{ .Values.domain }}:53 {
+      errors
+      rewrite name regex (.*)\.{{ .Values.domain | replace "." "\\." }}\.$ ingress-nginx-controller.{{ .Release.Namespace }}.svc.cluster.local. answer auto
+      # Resolve the rewritten name here; forwarding to ourselves would loop
+      kubernetes cluster.local
+    }
+{{- end }}

@@ -1,3 +1,5 @@
+#jinja2: variable_start_string: "[[", variable_end_string: "]]", block_start_string: "[%", block_end_string: "%]"
+# Rendered by ../../bootstrap.yml with the settings from environments/<env>.yml
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
@@ -7,9 +9,13 @@ spec:
   generators:
     - git:
         repoURL: &repoURL https://github.com/jonaskoperdraat/homelab
-        revision: &revision master
+        revision: &revision [[ revision ]]
         directories:
           - path: system/apps/*
+[% for app in excluded_apps if app.startswith('system/') %]
+          - path: [[ app ]]
+            exclude: true
+[% endfor %]
   template:
     metadata:
       name: '{{path.basename}}'
@@ -24,6 +30,13 @@ spec:
         repoURL: *repoURL
         path: '{{path}}'
         targetRevision: *revision
+        plugin:
+          name: helm-env
+          env:
+            - name: ENVIRONMENT
+              value: [[ env ]]
+            - name: DOMAIN
+              value: [[ domain ]]
       syncPolicy:
         automated:
           prune: true
