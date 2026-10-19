@@ -16,6 +16,9 @@ spec:
           # Rebooting a k3d node makes no sense
           - path: system/apps/kured
             exclude: true
+          # Nothing to manage for nip.io, and no TransIP credentials on dev
+          - path: system/apps/external-dns
+            exclude: true
   template:
     metadata:
       name: '{{path.basename}}'
