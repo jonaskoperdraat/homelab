@@ -37,6 +37,10 @@ git switch master && git merge my-change && git push
 
 Create the dev cluster from scratch with `make env=dev`.
 
+The dev cluster uses its own CA. Run `./scripts/trust-dev-ca` to trust it in the
+macOS keychain (browsers then accept the dev sites), and again after rebuilding
+the cluster. `./scripts/trust-dev-ca --remove` stops trusting it.
+
 Keep environment differences out of commits: put them in
 `environments/<env>.yml`, a `values-<env>.yaml` overlay, or a template guarded
 with `{{ if eq (.Values.environment | default "prod") "dev" }}`.

@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Trust the dev cluster's CA in the macOS login keychain, so browsers (and Go
+# tools) accept https://*.127-0-0-1.nip.io. Replaces CAs from earlier dev
+# clusters. Run with --remove to stop trusting it.
+#
+# The CA can sign certificates for any domain, so only trust it while you use
+# the dev cluster.
+
+set -eu
+
+name="homelab-dev CA"
+keychain="${HOME}/Library/Keychains/login.keychain-db"
+
+if [ "$(uname)" != Darwin ]; then
+    echo "Only macOS is supported" >&2
+    exit 1
+fi
+
+remove_old() {
+    for hash in $(security find-certificate -a -c "${name}" -Z "${keychain}" 2>/dev/null | awk '/^SHA-1 hash:/ { print $3 }'); do
+        if [ "${hash}" != "${1:-}" ]; then
+            echo "Removing ${name} ${hash}"
+            security delete-certificate -Z "${hash}" -t "${keychain}"
+        fi
+    done
+}
+
+if [ "${1:-}" = "--remove" ]; then
+    remove_old
+    exit 0
+fi
+
+export KUBECONFIG=./metal/kubeconfig.yaml
+
+cert="$(mktemp)"
+trap 'rm -f "${cert}"' EXIT
+kubectl -n cert-manager get secret dev-ca -o jsonpath='{.data.ca\.crt}' | base64 -d > "${cert}"
+hash="$(openssl x509 -in "${cert}" -noout -fingerprint -sha1 | cut -d= -f2 | tr -d :)"
+
+remove_old "${hash}"
+
+if security find-certificate -a -c "${name}" -Z "${keychain}" 2>/dev/null | grep -q "${hash}"; then
+    echo "${name} ${hash} is already trusted"
+else
+    echo "Trusting ${name} ${hash} (macOS will ask for your password)"
+    security add-trusted-cert -r trustRoot -k "${keychain}" "${cert}"
+fi
+
+echo "Restart your browser (Cmd+Q) to pick up the change"
