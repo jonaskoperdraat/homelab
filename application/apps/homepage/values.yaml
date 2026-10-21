@@ -74,7 +74,7 @@ app-template:
                 icon: jellyseerr.svg
             - Paperless:
                 href: https://paperless.jonaskoperdraat.nl
-                description: Document management system
+                description: Document management system X
                 icon: paperless.svg
           - Management:
             - Transmission:
