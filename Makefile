@@ -28,8 +28,9 @@ platform:
 application:
 	make -C application
 
+# The dev CA is not in the macOS keychain, so skip TLS verification on dev
 smoke-test:
-	make -C test filter=Smoke
+	INSECURE_SKIP_VERIFY=$(if $(filter dev,$(env)),1,) make -C test filter=Smoke
 
 # Point the cluster at another branch, e.g. `make env=dev switch revision=my-feature`
 switch:
