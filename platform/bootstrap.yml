@@ -22,3 +22,15 @@
         state: present
         server_side_apply:
           field_manager: argocd-controller
+
+    # Argo CD creates these namespaces when it syncs the apps; the Terraform
+    # external layer (run next by the Makefile) writes secrets into them
+    - name: Wait for the namespaces the external layer writes to
+      kubernetes.core.k8s_info:
+        kind: Namespace
+        name: "{{ item }}"
+      register: namespace
+      until: namespace.resources | length > 0
+      retries: 60
+      delay: 10
+      loop: "{{ ['system/apps/monitoring-system', 'platform/apps/global-secrets'] | difference(excluded_apps) | map('basename') }}"

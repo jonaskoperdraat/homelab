@@ -1,7 +1,8 @@
 .POSIX:
 
 env ?= prod
-revision ?= master
+# Same default as ../Makefile: dev follows the current branch
+revision ?= $(if $(filter dev,$(env)),$(shell git rev-parse --abbrev-ref HEAD),master)
 
 export KUBECONFIG = $(shell pwd)/../metal/kubeconfig$(if $(filter dev,$(env)),-dev,).yaml
 
