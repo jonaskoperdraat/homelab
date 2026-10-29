@@ -13,9 +13,11 @@ timeout="${3:-1800}"
 repo="$(cd "$(dirname "$0")/.." && pwd)"
 excluded="$(sed -n 's|^[[:space:]]*-[[:space:]]*\([a-z]*/apps/[^[:space:]]*\).*|\1|p' "${repo}/environments/${env}.yml")"
 
+# From Git rather than the filesystem: that is what Argo CD sees, and ignored
+# leftovers (charts/, Chart.lock) of a moved app don't count
 expected=""
-for dir in "${repo}/${layer}"/apps/*/; do
-    app="$(basename "${dir}")"
+for path in $(git -C "${repo}" ls-tree -d --name-only HEAD -- "${layer}/apps/"); do
+    app="$(basename "${path}")"
     if ! printf '%s\n' "${excluded}" | grep -qx "${layer}/apps/${app}"; then
         expected="${expected} ${app}"
     fi
