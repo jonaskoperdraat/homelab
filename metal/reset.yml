@@ -1,0 +1,63 @@
+# Destroy the Kubernetes cluster on the nodes but keep the OS, so it can be
+# recreated with `make cluster`. Removes k3s, all cluster data and the Ceph
+# OSD partition contents (created by the kickstart in roles/pxe_server).
+- name: Reset Kubernetes cluster
+  hosts: metal
+  vars_prompt:
+    - name: confirm
+      prompt: "This destroys the cluster and ALL its data (including Ceph) on every host in the inventory. Type 'reset' to continue"
+      private: false
+  tasks:
+    - name: Require confirmation
+      ansible.builtin.assert:
+        that: confirm == 'reset'
+        fail_msg: Aborted
+      run_once: true
+
+    - name: Find the Ceph partition on the OS disk
+      ansible.builtin.shell: lsblk --noheadings --raw --paths --output NAME,FSTYPE,MOUNTPOINT /dev/{{ disk }} | awk '$2 == "ceph_bluestore"'
+      register: ceph_partition
+      changed_when: false
+
+    - name: Require exactly one unmounted Ceph partition
+      ansible.builtin.assert:
+        that:
+          - ceph_partition.stdout_lines | length == 1
+          - ceph_partition.stdout.split() | length == 2
+        fail_msg: "Expected one unmounted ceph_bluestore partition on /dev/{{ disk }}, found: {{ ceph_partition.stdout_lines }}"
+
+    - name: Stop and disable k3s
+      ansible.builtin.systemd:
+        name: k3s
+        state: stopped
+        enabled: false
+      failed_when: false
+
+    # Clears container processes, mounts and Cilium's network devices and BPF state
+    - name: Reboot
+      ansible.builtin.reboot:
+
+    - name: Wipe the Ceph partition
+      ansible.builtin.shell: |
+        set -eu
+        wipefs --all {{ ceph_partition.stdout.split()[0] }}
+        dd if=/dev/zero of={{ ceph_partition.stdout.split()[0] }} bs=1M count=100 oflag=direct,dsync
+      changed_when: true
+
+    - name: Remove k3s, Kubernetes, CNI and Rook state
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/systemd/system/k3s.service
+        - /usr/local/bin/k3s
+        - /etc/rancher
+        - /var/lib/rancher
+        - /var/lib/kubelet
+        - /var/lib/cni
+        - /etc/cni/net.d
+        - /var/lib/rook
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true

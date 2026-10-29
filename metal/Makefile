@@ -18,6 +18,12 @@ cluster:
 		--inventory inventories/${env}.yml \
 		cluster.yml
 
+# Destroy the cluster but keep the OS, see reset.yml
+reset:
+	ansible-playbook \
+		--inventory inventories/${env}.yml \
+		reset.yml
+
 console:
 	ansible-console \
 		--inventory inventories/${env}.yml
