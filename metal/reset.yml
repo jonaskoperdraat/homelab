@@ -14,17 +14,30 @@
         fail_msg: Aborted
       run_once: true
 
-    - name: Find the Ceph partition on the OS disk
-      ansible.builtin.shell: lsblk --noheadings --raw --paths --output NAME,FSTYPE,MOUNTPOINT /dev/{{ disk }} | awk '$2 == "ceph_bluestore"'
-      register: ceph_partition
+    # The kickstart (roles/pxe_server) creates it as an extra partition on the
+    # OS disk. It is empty after a previous reset, so don't rely on its content:
+    # take the one partition that is unmounted and has no filesystem other
+    # than Ceph's. EFI and root are mounted and never match.
+    - name: List partitions on the OS disk
+      ansible.builtin.command: lsblk --json --paths --output NAME,TYPE,FSTYPE,MOUNTPOINT /dev/{{ disk }}
+      register: lsblk
       changed_when: false
+      check_mode: false
 
-    - name: Require exactly one unmounted Ceph partition
+    - name: Select the Ceph partition
+      ansible.builtin.set_fact:
+        ceph_partition: >-
+          {{ (lsblk.stdout | from_json).blockdevices[0].children | default([])
+             | selectattr('type', 'equalto', 'part')
+             | rejectattr('mountpoint')
+             | selectattr('fstype', 'in', [none, 'ceph_bluestore'])
+             | map(attribute='name') | list }}
+
+    - name: Require exactly one Ceph partition
       ansible.builtin.assert:
-        that:
-          - ceph_partition.stdout_lines | length == 1
-          - ceph_partition.stdout.split() | length == 2
-        fail_msg: "Expected one unmounted ceph_bluestore partition on /dev/{{ disk }}, found: {{ ceph_partition.stdout_lines }}"
+        that: ceph_partition | length == 1
+        fail_msg: "Expected one unmounted partition without filesystem (or with ceph_bluestore) on /dev/{{ disk }}, found: {{ ceph_partition }}"
+        success_msg: "Ceph partition: {{ ceph_partition[0] }}"
 
     - name: Stop and disable k3s
       ansible.builtin.systemd:
@@ -40,8 +53,8 @@
     - name: Wipe the Ceph partition
       ansible.builtin.shell: |
         set -eu
-        wipefs --all {{ ceph_partition.stdout.split()[0] }}
-        dd if=/dev/zero of={{ ceph_partition.stdout.split()[0] }} bs=1M count=100 oflag=direct,dsync
+        wipefs --all {{ ceph_partition[0] }}
+        dd if=/dev/zero of={{ ceph_partition[0] }} bs=1M count=100 oflag=direct,dsync
       changed_when: true
 
     - name: Remove k3s, Kubernetes, CNI and Rook state

@@ -24,6 +24,14 @@ reset:
 		--inventory inventories/${env}.yml \
 		reset.yml
 
+# Show what reset would do (including the selected Ceph partition), change nothing
+reset-check:
+	ansible-playbook \
+		--check \
+		--extra-vars confirm=reset \
+		--inventory inventories/${env}.yml \
+		reset.yml
+
 console:
 	ansible-console \
 		--inventory inventories/${env}.yml
