@@ -2,13 +2,14 @@
 .PHONY: *
 .EXPORT_ALL_VARIABLES:
 
-KUBECONFIG = $(shell pwd)/metal/kubeconfig.yaml
-KUBE_CONFIG_PATH = $(KUBECONFIG)
-
 # Environment, see environments/*.yml. `make env=dev` runs a local k3d cluster
 # that follows the current branch (push it first), production follows master.
 env ?= prod
 revision ?= $(if $(filter dev,$(env)),$(shell git rev-parse --abbrev-ref HEAD),master)
+
+# Separate files, so the dev cluster never overwrites the production kubeconfig
+KUBECONFIG = $(shell pwd)/metal/kubeconfig$(if $(filter dev,$(env)),-dev,).yaml
+KUBE_CONFIG_PATH = $(KUBECONFIG)
 
 default: metal system platform application smoke-test clean
 

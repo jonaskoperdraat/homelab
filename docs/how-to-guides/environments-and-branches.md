@@ -35,7 +35,10 @@ make env=dev switch          # point the dev cluster at the current branch
 git switch master && git merge my-change && git push
 ```
 
-Create the dev cluster from scratch with `make env=dev`.
+Create the dev cluster from scratch with `make env=dev`. Its kubeconfig is
+`metal/kubeconfig-dev.yaml`; production keeps `metal/kubeconfig.yaml`. Scripts
+use production unless you set `KUBECONFIG`, e.g.
+`KUBECONFIG=./metal/kubeconfig-dev.yaml ./scripts/argocd-admin-password`.
 
 The dev cluster uses its own CA. Run `./scripts/trust-dev-ca` to trust it in the
 macOS keychain (browsers then accept the dev sites), and again after rebuilding

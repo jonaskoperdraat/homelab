@@ -1,7 +1,7 @@
 .POSIX:
 
 env ?= prod
-export KUBECONFIG = $(shell pwd)/kubeconfig.yaml
+export KUBECONFIG = $(shell pwd)/kubeconfig$(if $(filter dev,$(env)),-dev,).yaml
 
 default: $(if $(filter dev,$(env)),k3d,boot cluster)
 
@@ -24,4 +24,4 @@ console:
 
 k3d:
 	k3d cluster start homelab-dev || k3d cluster create --config k3d-dev.yaml
-	k3d kubeconfig get homelab-dev > kubeconfig.yaml
+	k3d kubeconfig get homelab-dev > $(KUBECONFIG)

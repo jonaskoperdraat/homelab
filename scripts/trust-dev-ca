@@ -31,7 +31,7 @@ if [ "${1:-}" = "--remove" ]; then
     exit 0
 fi
 
-export KUBECONFIG=./metal/kubeconfig.yaml
+export KUBECONFIG=./metal/kubeconfig-dev.yaml
 
 cert="$(mktemp)"
 trap 'rm -f "${cert}"' EXIT

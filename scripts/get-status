@@ -1,6 +1,7 @@
 #!/bin/sh
 
-export KUBECONFIG=./metal/kubeconfig.yaml
+# Production by default, e.g. KUBECONFIG=./metal/kubeconfig-dev.yaml for dev
+export KUBECONFIG="${KUBECONFIG:-./metal/kubeconfig.yaml}"
 
 kubectl get applicationsets --namespace argocd
 kubectl get applications --namespace argocd

@@ -1,9 +1,9 @@
 .POSIX:
 
-export KUBECONFIG = $(shell pwd)/../metal/kubeconfig.yaml
-
 env ?= prod
 revision ?= master
+
+export KUBECONFIG = $(shell pwd)/../metal/kubeconfig$(if $(filter dev,$(env)),-dev,).yaml
 
 .PHONY: *
 

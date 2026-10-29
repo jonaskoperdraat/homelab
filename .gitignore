@@ -6,6 +6,7 @@ book/
 *.png
 *.tgz
 *kubeconfig.yaml
+kubeconfig*.yaml
 Chart.lock
 *.iml
 *.pem
