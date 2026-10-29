@@ -51,6 +51,9 @@ spec:
           - CreateNamespace=true
           - ApplyOutOfSyncOnly=true
           - ServerSideApply=true
+          # On a new cluster, CRDs such as ServiceMonitor appear when another
+          # app syncs; don't let them block the rest of this app
+          - SkipDryRunOnMissingResource=true
         managedNamespaceMetadata:
           annotations:
             # Enable privileged VolSync movers by default for all namespaces

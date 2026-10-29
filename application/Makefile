@@ -8,10 +8,14 @@ export KUBECONFIG = $(shell pwd)/../metal/kubeconfig$(if $(filter dev,$(env)),-d
 
 .PHONY: *
 
-default: bootstrap
+default: bootstrap wait
 
 bootstrap:
 	ansible-playbook \
 		--extra-vars env=$(env) \
 		--extra-vars revision=$(revision) \
 		bootstrap.yml
+
+# Done when every app of this layer is Synced and Healthy
+wait:
+	../scripts/wait-for-layer application $(env)

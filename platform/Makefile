@@ -8,7 +8,7 @@ export KUBECONFIG = $(shell pwd)/../metal/kubeconfig$(if $(filter dev,$(env)),-d
 
 .PHONY: *
 
-default: bootstrap $(if $(filter dev,$(env)),,external)
+default: bootstrap $(if $(filter dev,$(env)),,external) wait
 
 bootstrap:
 	ansible-playbook \
@@ -21,4 +21,6 @@ external:
 	@test "$(env)" = prod || { echo "Refusing to apply $@ for env=$(env)"; exit 1; }
 	make -C external
 
-
+# Done when every app of this layer is Synced and Healthy
+wait:
+	../scripts/wait-for-layer platform $(env)

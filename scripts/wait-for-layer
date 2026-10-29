@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# Wait until every app of a layer is Synced and Healthy in Argo CD.
+# usage: scripts/wait-for-layer <system|platform|application> [env] [timeout-seconds]
+# Expects KUBECONFIG to point at the cluster (the layer Makefiles set it).
+
+set -eu
+
+layer="${1}"
+env="${2:-prod}"
+timeout="${3:-1800}"
+
+repo="$(cd "$(dirname "$0")/.." && pwd)"
+excluded="$(sed -n 's|^[[:space:]]*-[[:space:]]*\([a-z]*/apps/[^[:space:]]*\).*|\1|p' "${repo}/environments/${env}.yml")"
+
+expected=""
+for dir in "${repo}/${layer}"/apps/*/; do
+    app="$(basename "${dir}")"
+    if ! printf '%s\n' "${excluded}" | grep -qx "${layer}/apps/${app}"; then
+        expected="${expected} ${app}"
+    fi
+done
+
+echo "Waiting up to ${timeout}s for ${layer} apps to be Synced and Healthy:${expected}"
+
+status() {
+    kubectl --request-timeout=20s -n argocd get applications -l "layer=${layer}" \
+        -o jsonpath='{range .items[*]}{.metadata.name} {.status.sync.status}/{.status.health.status}{"\n"}{end}' 2>/dev/null || true
+}
+
+start="$(date +%s)"
+last=""
+while :; do
+    current="$(status)"
+    pending=""
+    for app in ${expected}; do
+        state="$(printf '%s\n' "${current}" | awk -v app="${app}" '$1 == app { print $2 }')"
+        [ "${state}" = "Synced/Healthy" ] || pending="${pending} ${app}=${state:-missing}"
+    done
+
+    if [ -z "${pending}" ]; then
+        echo "All ${layer} apps are Synced and Healthy after $(( $(date +%s) - start ))s"
+        exit 0
+    fi
+
+    if [ "${pending}" != "${last}" ]; then
+        echo "$(date +%H:%M:%S) waiting for:${pending}"
+        last="${pending}"
+    fi
+
+    if [ "$(( $(date +%s) - start ))" -ge "${timeout}" ]; then
+        echo "Timed out, details:" >&2
+        for entry in ${pending}; do
+            app="${entry%%=*}"
+            echo "--- ${app}" >&2
+            kubectl --request-timeout=20s -n argocd get application "${app}" \
+                -o jsonpath='{range .status.conditions[*]}{.type}: {.message}{"\n"}{end}{.status.operationState.phase}: {.status.operationState.message}{"\n"}{range .status.resources[?(@.health.status!="Healthy")]}{.kind}/{.namespace}/{.name}: {.status} {.health.status} {.health.message}{"\n"}{end}' >&2 2>/dev/null || true
+        done
+        exit 1
+    fi
+    sleep 10
+done
