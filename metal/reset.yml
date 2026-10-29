@@ -50,12 +50,37 @@
     - name: Reboot
       ansible.builtin.reboot:
 
+    # BlueStore (Ceph >= 19) keeps copies of its label at 1, 10, 100 and
+    # 1000 GiB; with any left, Rook refuses the partition as belonging to
+    # another Ceph cluster
     - name: Wipe the Ceph partition
       ansible.builtin.shell: |
         set -eu
-        wipefs --all {{ ceph_partition[0] }}
-        dd if=/dev/zero of={{ ceph_partition[0] }} bs=1M count=100 oflag=direct,dsync
+        part={{ ceph_partition[0] }}
+        size=$(blockdev --getsize64 "$part")
+        wipefs --all "$part"
+        dd if=/dev/zero of="$part" bs=1M count=100 oflag=direct,dsync
+        for gib in 1 10 100 1000; do
+          if [ $((gib * 1024 * 1024 * 1024)) -lt "$size" ]; then
+            dd if=/dev/zero of="$part" bs=1M count=1 seek=$((gib * 1024)) oflag=direct,dsync
+          fi
+        done
       changed_when: true
+
+    - name: Verify no BlueStore label is left
+      ansible.builtin.shell: |
+        set -eu
+        part={{ ceph_partition[0] }}
+        size=$(blockdev --getsize64 "$part")
+        for gib in 0 1 10 100 1000; do
+          if [ $((gib * 1024 * 1024 * 1024)) -lt "$size" ]; then
+            if dd if="$part" bs=4096 count=1 skip=$((gib * 1024 * 256)) iflag=direct 2>/dev/null | grep -qa "bluestore block device"; then
+              echo "BlueStore label left at ${gib} GiB" >&2
+              exit 1
+            fi
+          fi
+        done
+      changed_when: false
 
     - name: Remove k3s, Kubernetes, CNI and Rook state
       ansible.builtin.file:
