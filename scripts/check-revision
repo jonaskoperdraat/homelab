@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# Refuse to bootstrap unless the revision Argo CD will deploy is exactly what
+# is checked out. The bootstrap renders the ApplicationSets from this checkout,
+# while Argo CD renders the apps from the revision on GitHub; they must match.
+# usage: scripts/check-revision <revision>
+
+set -eu
+
+revision="${1}"
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+fail() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
+
+if [ "${branch}" != "${revision}" ]; then
+    fail "deploying '${revision}', but '${branch}' is checked out. Switch to '${revision}', or pass revision=${branch} to deploy this branch."
+fi
+
+if ! git diff --quiet HEAD --; then
+    fail "uncommitted changes; Argo CD only sees what is pushed. Commit and push them first."
+fi
+
+git fetch --quiet origin "${revision}" || fail "'${revision}' is not on origin; push it first (git push -u origin ${revision})."
+
+if [ "$(git rev-parse HEAD)" != "$(git rev-parse FETCH_HEAD)" ]; then
+    fail "'${revision}' differs from origin/${revision}; push or pull first."
+fi
+
+echo "Deploying ${revision} at $(git rev-parse --short HEAD)"

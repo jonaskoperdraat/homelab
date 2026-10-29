@@ -11,6 +11,7 @@ export KUBECONFIG = $(shell pwd)/../metal/kubeconfig$(if $(filter dev,$(env)),-d
 default: bootstrap wait
 
 bootstrap:
+	../scripts/check-revision $(revision)
 	ansible-playbook \
 		--extra-vars env=$(env) \
 		--extra-vars revision=$(revision) \
