@@ -7,7 +7,9 @@ mail="${3}"
 # Production by default, e.g. KUBECONFIG=./metal/kubeconfig-dev.yaml for dev
 export KUBECONFIG="${KUBECONFIG:-./metal/kubeconfig.yaml}"
 host="$(kubectl get ingress --namespace kanidm kanidm --output jsonpath='{.spec.rules[0].host}')"
+echo "Using host: ${host}"
 
+kanidm login --url "https://${host}" --name idm_admin
 kanidm person create "${username}" "${fullname}" --url "https://${host}" --name idm_admin
 kanidm person update "${username}" --url "https://${host}" --name idm_admin --mail "${mail}"
 # TODO better group management
