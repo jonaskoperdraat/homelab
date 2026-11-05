@@ -1,0 +1,8 @@
+# dev: the k3d cluster runs in a VM that pauses whenever the laptop sleeps,
+# and timers inside it pause too. The webhook renews its 7-day certificates
+# with such a timer, so they expired before being renewed.
+cert-manager:
+  webhook:
+    extraArgs:
+      - --dynamic-serving-leaf-duration=8760h
+      - --metrics-dynamic-serving-leaf-duration=8760h
