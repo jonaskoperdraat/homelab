@@ -2,7 +2,7 @@
   description = "Homelab";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-25.11-darwin";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -43,6 +43,7 @@
             shellcheck
             wireguard-tools
             yamllint
+            pkgs.kanidm_1_11
 
             (python3.withPackages (p: with p; [
               jinja2
