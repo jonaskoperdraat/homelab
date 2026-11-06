@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Approve a device that logged in through the browser (iOS, macOS app): the
+# login page shows an auth ID, e.g. https://headscale.jonaskoperdraat.nl/register/<auth-id>
+# usage: scripts/vpn-approve-device <user> <auth-id>    (users: metal/group_vars/vps.yml)
+
+set -eu
+
+user="${1:?usage: $0 <user> <auth-id>}"
+auth_id="${2:?usage: $0 <user> <auth-id>}"
+
+exec "$(dirname "$0")/headscale" auth register --user "${user}" --auth-id "${auth_id}"

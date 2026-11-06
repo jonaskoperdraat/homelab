@@ -32,5 +32,6 @@ and log in with the key above. On the command line:
 
   tailscale up --login-server https://headscale.jonaskoperdraat.nl --accept-routes --auth-key ${key}
 
-See docs/how-to-guides/vpn.md.
+For iOS and the macOS app (browser login), use scripts/vpn-approve-device
+instead. See docs/how-to-guides/vpn.md.
 MSG
