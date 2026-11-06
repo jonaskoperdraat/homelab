@@ -15,7 +15,7 @@ Run the scripts below from the repository, inside `nix develop`.
 
 ## Add a device
 
-### Android, Linux, command line: with a key
+### Android, Windows, Linux: with a key
 
 ```sh
 ./scripts/vpn-add-device jonas        # or fenna
@@ -27,7 +27,12 @@ This prints a single-use key, valid for one hour.
   the menu at the top right *Use an alternate server* and enter
   `https://headscale.jonaskoperdraat.nl`. Close the login page if it opens.
   Then again *Accounts*, *Use an auth key*, and enter the key.
-- **Command line:**
+- **Windows:** install the [Tailscale client](https://tailscale.com/download/windows),
+  then in Command Prompt or PowerShell:
+  `tailscale up --login-server https://headscale.jonaskoperdraat.nl --accept-routes --auth-key <key>`.
+  Tailscale only runs while you are logged in to Windows; to keep it running,
+  enable *Run unattended* under *Preferences* in the tray icon.
+- **Linux, command line:**
   `tailscale up --login-server https://headscale.jonaskoperdraat.nl --accept-routes --auth-key <key>`
 
 ### iOS, macOS app: through the browser
@@ -46,8 +51,9 @@ The browser shows a page with an auth ID (also at the end of its URL,
 ./scripts/vpn-approve-device jonas <auth-id>
 ```
 
-The Apple apps use the homelab routes automatically. On Linux and the command
-line, pass `--accept-routes`.
+The Apple and Android apps use the homelab routes automatically. On Windows and
+Linux, `--accept-routes` (above) is needed; on Windows it is also the *Use
+Tailscale subnets* option in the tray icon.
 
 ## Remove a device, e.g. a lost phone
 
@@ -68,6 +74,9 @@ logins.
   `homelab` under *Approved*, *Available* and *Serving*.
 - Re-registering the router: `KUBECONFIG=metal/kubeconfig.yaml ./scripts/vpn-register-router`
   (also run by `make system`).
+- Windows device that won't register: quit Tailscale, delete
+  `C:\Users\<USERNAME>\AppData\Local\Tailscale`, remove the device
+  (`vpn-remove-device`), and add it again.
 - Take a snapshot of the VPS in the TransIP control panel before upgrading
   Debian or Headscale. Losing the VPS (`/var/lib/headscale`) means every device
   has to be added again.
