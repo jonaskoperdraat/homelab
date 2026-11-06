@@ -1,0 +1,4 @@
+- name: Reload firewall
+  ansible.builtin.systemd:
+    name: nftables
+    state: reloaded

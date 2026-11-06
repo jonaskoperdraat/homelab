@@ -1,0 +1,42 @@
+- name: Download Headscale
+  ansible.builtin.get_url:
+    url: "https://github.com/juanfont/headscale/releases/download/v{{ headscale_version }}/headscale_{{ headscale_version }}_linux_amd64.deb"
+    checksum: "sha256:https://github.com/juanfont/headscale/releases/download/v{{ headscale_version }}/checksums.txt"
+    dest: "/var/cache/headscale_{{ headscale_version }}_linux_amd64.deb"
+    mode: "0644"
+
+- name: Install Headscale
+  ansible.builtin.apt:
+    deb: "/var/cache/headscale_{{ headscale_version }}_linux_amd64.deb"
+  notify: Restart Headscale
+
+- name: Configure Headscale
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: /etc/headscale/config.yaml
+    owner: root
+    group: headscale
+    mode: "0640"
+  notify: Restart Headscale
+
+- name: Start Headscale
+  ansible.builtin.systemd:
+    name: headscale
+    state: started
+    enabled: true
+
+- name: Apply configuration changes now
+  ansible.builtin.meta: flush_handlers
+
+- name: List Headscale users
+  ansible.builtin.command: headscale users list --output json
+  register: headscale_users_list
+  changed_when: false
+  check_mode: false
+  retries: 10
+  delay: 3
+  until: headscale_users_list.rc == 0
+
+- name: Create Headscale users
+  ansible.builtin.command: headscale users create {{ item }}
+  loop: "{{ headscale_users | difference(headscale_users_list.stdout | from_json | default([], true) | map(attribute='name') | list) }}"

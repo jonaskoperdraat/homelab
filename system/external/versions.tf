@@ -15,7 +15,17 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.26.0"
     }
+
+    transip = {
+      source  = "aequitas/transip"
+      version = "~> 0.1.27"
+    }
   }
+}
+
+provider "transip" {
+  account_name = var.transip.account_name
+  private_key  = var.transip.private_key
 }
 
 provider "kubernetes" {

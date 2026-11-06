@@ -1,0 +1,30 @@
+#!/usr/sbin/nft -f
+# Managed by Ansible (metal/roles/vps_base)
+
+flush ruleset
+
+table inet filter {
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    iif lo accept
+    ct state established,related accept
+    ct state invalid drop
+
+    # Path MTU discovery and IPv6 neighbour discovery need ICMP
+    ip protocol icmp accept
+    ip6 nexthdr icmpv6 accept
+
+    tcp dport 22 accept comment "SSH"
+    tcp dport 443 accept comment "SNI proxy: Headscale, DERP"
+    udp dport 3478 accept comment "DERP STUN"
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+
+  chain output {
+    type filter hook output priority filter; policy accept;
+  }
+}

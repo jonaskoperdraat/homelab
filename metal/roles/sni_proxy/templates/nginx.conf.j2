@@ -1,0 +1,29 @@
+# Managed by Ansible (metal/roles/sni_proxy)
+# Only a TCP proxy: routes TLS connections on port 443 by their server name
+# (SNI) without decrypting them, so certificates stay with the backends.
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+error_log /var/log/nginx/error.log;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+  worker_connections 1024;
+}
+
+stream {
+  map $ssl_preread_server_name $sni_backend {
+{% for route in sni_routes %}
+    {{ route.name }} {{ route.backend }};
+{% endfor %}
+    # Unknown names: refuse (the socket doesn't exist)
+    default unix:/run/nginx-sni-unknown.sock;
+  }
+
+  server {
+    listen 443;
+    listen [::]:443;
+    ssl_preread on;
+    proxy_pass $sni_backend;
+  }
+}

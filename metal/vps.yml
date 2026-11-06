@@ -1,0 +1,6 @@
+- name: Set up the VPS (Headscale, SNI proxy, firewall)
+  hosts: vps
+  roles:
+    - vps_base
+    - headscale
+    - sni_proxy

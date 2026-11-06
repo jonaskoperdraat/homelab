@@ -18,6 +18,12 @@ cluster:
 		--inventory inventories/${env}.yml \
 		cluster.yml
 
+# The VPS (not part of the cluster), see vps.yml
+vps:
+	ansible-playbook \
+		--inventory inventories/${env}.yml \
+		vps.yml
+
 # Destroy the cluster but keep the OS, see reset.yml
 reset:
 	ansible-playbook \

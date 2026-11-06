@@ -1,0 +1,80 @@
+# Managed by Ansible (metal/roles/headscale)
+# https://github.com/juanfont/headscale/blob/v{{ headscale_version }}/config-example.yaml
+server_url: https://{{ headscale_domain }}
+# Behind the SNI proxy (roles/sni_proxy), which owns port 443
+listen_addr: 127.0.0.1:8443
+metrics_listen_addr: 127.0.0.1:9090
+grpc_listen_addr: 127.0.0.1:50443
+grpc_allow_insecure: false
+
+noise:
+  private_key_path: /var/lib/headscale/noise_private.key
+
+prefixes:
+  v4: 100.64.0.0/10
+  v6: fd7a:115c:a1e0::/48
+  allocation: sequential
+
+derp:
+  server:
+    enabled: true
+    region_id: 999
+    region_code: vps
+    region_name: VPS
+    verify_clients: true
+    stun_listen_addr: 0.0.0.0:3478
+    private_key_path: /var/lib/headscale/derp_server_private.key
+    automatically_add_embedded_derp_region: true
+    ipv4: {{ ansible_host }}
+    ipv6: {{ ipv6 }}
+  # Only our own relay, no Tailscale-hosted ones
+  urls: []
+  paths: []
+  auto_update_enabled: false
+
+disable_check_updates: true
+
+node:
+  expiry: 0
+  ephemeral:
+    inactivity_timeout: 30m
+
+database:
+  type: sqlite
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
+    write_ahead_log: true
+
+# Headscale requests its own certificate; TLS-ALPN-01 runs over port 443
+# through the SNI proxy, so port 80 stays closed
+tls_letsencrypt_hostname: {{ headscale_domain }}
+tls_letsencrypt_cache_dir: /var/lib/headscale/cache
+tls_letsencrypt_challenge_type: TLS-ALPN-01
+
+log:
+  level: info
+  format: text
+
+policy:
+  mode: file
+  path: ""
+
+dns:
+  magic_dns: true
+  base_domain: vpn.internal
+  # Devices keep their own DNS: *.jonaskoperdraat.nl resolves publicly to the
+  # ingress, which the homelab subnet router makes reachable
+  override_local_dns: false
+  nameservers:
+    global: []
+    split: {}
+  search_domains: []
+  extra_records: []
+
+unix_socket: /var/run/headscale/headscale.sock
+unix_socket_permission: "0770"
+
+logtail:
+  enabled: false
+taildrop:
+  enabled: true

@@ -1,0 +1,16 @@
+# TransIP VPS, see vps.yml. Overrides group_vars/all.yml.
+ansible_user: jkoper
+ansible_become: true
+
+headscale_version: 0.29.7
+headscale_domain: headscale.jonaskoperdraat.nl
+# Headscale users; devices are registered per user (scripts/vpn-add-device)
+headscale_users:
+  - homelab
+  - jonas
+
+# SNI proxy (roles/sni_proxy): server name on port 443 -> backend.
+# Public homelab apps get added here later.
+sni_routes:
+  - name: "{{ headscale_domain }}"
+    backend: 127.0.0.1:8443
