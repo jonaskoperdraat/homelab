@@ -46,7 +46,8 @@ database:
     write_ahead_log: true
 
 # Headscale requests its own certificate; TLS-ALPN-01 runs over port 443
-# through the SNI proxy, so port 80 stays closed
+# through the SNI proxy, so port 80 stays closed. Its startup warning that it
+# "must be reachable on port 443" is expected: it is, via the proxy.
 tls_letsencrypt_hostname: {{ headscale_domain }}
 tls_letsencrypt_cache_dir: /var/lib/headscale/cache
 tls_letsencrypt_challenge_type: TLS-ALPN-01
