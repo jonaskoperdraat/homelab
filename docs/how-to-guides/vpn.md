@@ -11,6 +11,28 @@ home (`https://<app>.jonaskoperdraat.nl`).
   coordination server. Each person is a Headscale user (`headscale_users` in
   `metal/group_vars/vps.yml`).
 
+## Who can reach what
+
+The policy (`metal/roles/headscale/templates/policy.hujson.j2`) allows only:
+
+| Who | What | Ports |
+|---|---|---|
+| everyone | the apps (ingress `192.168.88.224/27`) | 80, 443 |
+| everyone | their own devices | all |
+| admins (`headscale_admins`: jonas) | Git over SSH on the ingress | 22 |
+| admins | the cluster API (`192.168.88.50`) | 6443 |
+| admins | the nodes | 22 |
+
+Admins can run `kubectl`, `make` and Ansible from anywhere. That depends on
+the cluster: the subnet router runs in it, so with the cluster down, the nodes
+are only reachable at home.
+
+**At home**, devices may send this traffic through the VPN as well, since its
+routes are more specific than the home network. That breaks SSH to the nodes
+while the cluster is down, so quit Tailscale on your computer before
+`make -C metal reset` or `make -C metal cluster`. Check with
+`route -n get 192.168.88.41` (macOS): `interface: utun…` means through the VPN.
+
 Run the scripts below from the repository, inside `nix develop`.
 
 ## Add a device
