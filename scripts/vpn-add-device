@@ -35,3 +35,8 @@ and log in with the key above. On the command line:
 For iOS and the macOS app (browser login), use scripts/vpn-approve-device
 instead. See docs/how-to-guides/vpn.md.
 MSG
+
+# Scan it with the phone's camera and copy the text into the Tailscale app
+echo
+echo "The same key as a QR code:"
+qrencode --type ansiutf8 "${key}"

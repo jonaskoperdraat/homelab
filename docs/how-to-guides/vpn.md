@@ -21,12 +21,13 @@ Run the scripts below from the repository, inside `nix develop`.
 ./scripts/vpn-add-device jonas        # or fenna
 ```
 
-This prints a single-use key, valid for one hour.
+This prints a single-use key, valid for one hour, also as a QR code: scan it
+with the phone's camera and copy the text, so you don't have to type it.
 
 - **Android:** in the Tailscale app, open the settings menu, *Accounts*, then in
   the menu at the top right *Use an alternate server* and enter
   `https://headscale.jonaskoperdraat.nl`. Close the login page if it opens.
-  Then again *Accounts*, *Use an auth key*, and enter the key.
+  Then again *Accounts*, *Use an auth key*, and paste the key.
 - **Windows:** install the [Tailscale client](https://tailscale.com/download/windows),
   then in Command Prompt or PowerShell:
   `tailscale up --login-server https://headscale.jonaskoperdraat.nl --accept-routes --auth-key <key>`.
