@@ -3,13 +3,55 @@
 # Register the homelab subnet router (system/apps/tailscale) with Headscale,
 # unless it already is. Run by `make system` for production.
 # usage: scripts/vpn-register-router [namespace] [hostname]
-# Expects KUBECONFIG to point at the cluster.
+# Uses KUBECONFIG, or metal/kubeconfig.yaml (production) if unset.
 
 set -eu
 
 namespace="${1:-tailscale}"
 hostname="${2:-homelab}"
+
+# Production by default; make a relative KUBECONFIG absolute before the cd below
+case "${KUBECONFIG:-}" in
+    "") KUBECONFIG="$(cd "$(dirname "$0")/.." && pwd)/metal/kubeconfig.yaml" ;;
+    /*) ;;
+    *) KUBECONFIG="${PWD}/${KUBECONFIG}" ;;
+esac
+export KUBECONFIG
 cd "$(dirname "$0")"
+
+# Before anything else: the cluster must be reachable. Otherwise a failing
+# kubectl looks like a missing router state, and a registered router would be
+# deleted from Headscale.
+if ! kubectl get namespace "${namespace}" >/dev/null; then
+    echo "ERROR: cannot reach namespace ${namespace} in the cluster (KUBECONFIG=${KUBECONFIG:-unset}); changing nothing" >&2
+    exit 1
+fi
+
+# Every advertised route must be approved (auto-approved by the policy), so a
+# route missing from the policy doesn't go unnoticed
+check_routes() {
+    for _ in $(seq 30); do
+        if ./headscale nodes list --output json | python3 -c '
+import json, sys
+node = next((n for n in json.load(sys.stdin) or [] if sys.argv[1] in (n.get("given_name"), n.get("name"))), None)
+available = set((node or {}).get("available_routes") or [])
+approved = set((node or {}).get("approved_routes") or [])
+if not available:
+    sys.exit(1)  # not advertised yet
+if available - approved:
+    print("Routes not approved by the Headscale policy:", sorted(available - approved), file=sys.stderr)
+    sys.exit(2)
+print("Routes approved:", ", ".join(sorted(available)))
+' "${hostname}"; then
+            return 0
+        elif [ $? -eq 2 ]; then
+            return 1
+        fi
+        sleep 2
+    done
+    echo "Router ${hostname} advertises no routes" >&2
+    return 1
+}
 
 node_id="$(./headscale nodes list --output json | python3 -c '
 import json, sys
@@ -18,14 +60,19 @@ for n in json.load(sys.stdin) or []:
         print(n["id"])
 ' "${hostname}")"
 
-if kubectl -n "${namespace}" get secret tailscale-state >/dev/null 2>&1; then
+# Only a definite "not found" means there is no state; any other error aborts
+if state_error="$(kubectl -n "${namespace}" get secret tailscale-state --output name 2>&1)"; then
     has_state=true
-else
+elif printf '%s' "${state_error}" | grep -q 'NotFound'; then
     has_state=false
+else
+    echo "ERROR: cannot check the router state, changing nothing: ${state_error}" >&2
+    exit 1
 fi
 
 if [ -n "${node_id}" ] && [ "${has_state}" = true ]; then
     echo "Router ${hostname} is already registered (node ${node_id})"
+    check_routes
     exit 0
 fi
 
@@ -57,3 +104,4 @@ kubectl -n "${namespace}" rollout status deployment/tailscale --timeout=300s
 # Logged in now, so the key is no longer needed (and was single-use anyway)
 kubectl -n "${namespace}" delete secret tailscale-auth
 echo "Router ${hostname} registered"
+check_routes

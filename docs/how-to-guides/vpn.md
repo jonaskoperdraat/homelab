@@ -73,7 +73,7 @@ logins.
   when they were last seen.
 - `./scripts/headscale nodes list-routes` should show `192.168.88.224/27` for
   `homelab` under *Approved*, *Available* and *Serving*.
-- Re-registering the router: `KUBECONFIG=metal/kubeconfig.yaml ./scripts/vpn-register-router`
+- Re-registering the router: `./scripts/vpn-register-router` (production by default)
   (also run by `make system`).
 - Windows device that won't register: quit Tailscale, delete
   `C:\Users\<USERNAME>\AppData\Local\Tailscale`, remove the device
