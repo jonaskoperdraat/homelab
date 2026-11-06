@@ -1,12 +1,58 @@
 // Managed by Ansible (metal/roles/headscale)
 // https://github.com/juanfont/headscale/blob/v{{ headscale_version }}/docs/ref/policy.md
 //
-// No "acls" or "grants": Headscale then allows all traffic between devices.
+// Least privilege: only what is granted below is allowed.
 {
+  "groups": {
+    "group:admins": [{% for user in headscale_admins %}"{{ user }}@"{{ ", " if not loop.last }}{% endfor %}]
+  },
+
+  "hosts": {
+{% for route in headscale_ingress %}
+    "ingress{{ loop.index if headscale_ingress | length > 1 }}": "{{ route }}",
+{% endfor %}
+    "kube-api": "{{ headscale_kube_api[0] }}",
+{% for host in groups['metal'] %}
+    "{{ host }}": "{{ hostvars[host].ansible_host }}/32"{{ "," if not loop.last }}
+{% endfor %}
+  },
+
   // The homelab subnet router (system/apps/tailscale) registers with this tag
   "tagOwners": {
     "tag:router": ["homelab@"]
   },
+
+  "grants": [
+    // Everyone: the apps, through the ingress
+    {
+      "src": ["autogroup:member"],
+      "dst": [{% for route in headscale_ingress %}"ingress{{ loop.index if headscale_ingress | length > 1 }}"{{ ", " if not loop.last }}{% endfor %}],
+      "ip": ["80", "443"]
+    },
+    // Admins: Git over SSH on the ingress, the cluster API, and SSH to the nodes
+    {
+      "src": ["group:admins"],
+      "dst": [{% for route in headscale_ingress %}"ingress{{ loop.index if headscale_ingress | length > 1 }}"{{ ", " if not loop.last }}{% endfor %}],
+      "ip": ["22"]
+    },
+    {
+      "src": ["group:admins"],
+      "dst": ["kube-api"],
+      "ip": ["6443"]
+    },
+    {
+      "src": ["group:admins"],
+      "dst": [{% for host in groups['metal'] %}"{{ host }}"{{ ", " if not loop.last }}{% endfor %}],
+      "ip": ["22"]
+    },
+    // Everyone: their own devices
+    {
+      "src": ["autogroup:member"],
+      "dst": ["autogroup:self"],
+      "ip": ["*"]
+    }
+  ],
+
   "autoApprovers": {
     "routes": {
 {% for route in headscale_router_routes %}

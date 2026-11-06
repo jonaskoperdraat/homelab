@@ -9,9 +9,17 @@ headscale_users:
   - homelab
   - jonas
   - fenna
-# Routes the homelab subnet router may advertise without manual approval:
-# the ingress (load balancer) addresses
-headscale_router_routes: "{{ load_balancer_ip_pool }}"
+# Users who may also reach the cluster API and the nodes (SSH)
+headscale_admins:
+  - jonas
+
+# What the homelab subnet router (system/apps/tailscale) advertises, from the
+# inventory; routes are approved automatically and limited by the policy
+# (roles/headscale/templates/policy.hujson.j2)
+headscale_ingress: "{{ load_balancer_ip_pool }}"
+headscale_kube_api: ["{{ control_plane_endpoint }}/32"]
+headscale_nodes: "{{ groups['metal'] | map('extract', hostvars, 'ansible_host') | map('regex_replace', '$', '/32') | list }}"
+headscale_router_routes: "{{ headscale_ingress + headscale_kube_api + headscale_nodes }}"
 
 # SNI proxy (roles/sni_proxy): server name on port 443 -> backend.
 # Public homelab apps get added here later.

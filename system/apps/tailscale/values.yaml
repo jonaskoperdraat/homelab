@@ -4,5 +4,8 @@
 image: ghcr.io/tailscale/tailscale:v1.104.4
 hostname: homelab
 loginServer: https://headscale.jonaskoperdraat.nl
-# The ingress addresses (load_balancer_ip_pool in metal/inventories)
-routes: 192.168.88.224/27
+# Ingress (load_balancer_ip_pool), cluster API (control_plane_endpoint) and the
+# nodes, as in metal/inventories/prod.yml. Headscale only approves what its
+# policy (metal/group_vars/vps.yml) lists; scripts/vpn-register-router fails
+# on anything unapproved.
+routes: 192.168.88.224/27,192.168.88.50/32,192.168.88.41/32,192.168.88.42/32,192.168.88.43/32,192.168.88.44/32,192.168.88.45/32
