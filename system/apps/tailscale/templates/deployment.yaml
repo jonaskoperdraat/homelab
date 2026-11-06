@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tailscale
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  # One node identity (tailscale-state): never run two at once
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tailscale
+  template:
+    metadata:
+      labels:
+        app: tailscale
+    spec:
+      serviceAccountName: tailscale
+      containers:
+        - name: tailscale
+          image: {{ .Values.image }}
+          env:
+            - name: TS_HOSTNAME
+              value: {{ .Values.hostname }}
+            # Userspace networking routes the subnet without extra privileges
+            - name: TS_USERSPACE
+              value: "true"
+            - name: TS_KUBE_SECRET
+              value: tailscale-state
+            - name: TS_ROUTES
+              value: {{ .Values.routes }}
+            # tag:router (needed for auto-approving the routes) comes from the
+            # pre-auth key; requesting it here as well is rejected by Headscale
+            - name: TS_EXTRA_ARGS
+              value: --login-server={{ .Values.loginServer }}
+            # The single-use key is only needed for the first login; the
+            # identity is kept in the tailscale-state secret afterwards
+            - name: TS_AUTH_ONCE
+              value: "true"
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: tailscale-auth
+                  key: TS_AUTHKEY
+                  optional: true
+            # /healthz returns 200 once the node has a tailnet address
+            - name: TS_ENABLE_HEALTH_CHECK
+              value: "true"
+            - name: TS_LOCAL_ADDR_PORT
+              value: "[::]:9002"
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9002
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            capabilities:
+              drop: [ALL]

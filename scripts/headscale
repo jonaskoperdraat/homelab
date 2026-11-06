@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Run the headscale CLI on the VPS, e.g. scripts/headscale nodes list
+# The VPS address and login come from the Ansible inventory (metal/).
+
+set -eu
+
+repo="$(cd "$(dirname "$0")/.." && pwd)"
+
+login="$(ansible-inventory --inventory "${repo}/metal/inventories/prod.yml" --playbook-dir "${repo}/metal" --host vps1 \
+    | python3 -c 'import json, sys; h = json.load(sys.stdin); print(h["ansible_user"] + "@" + h["ansible_host"])')"
+
+# -n: never read stdin, so it is safe to call in a `while read` loop
+exec ssh -n -o BatchMode=yes "${login}" sudo headscale "$@"

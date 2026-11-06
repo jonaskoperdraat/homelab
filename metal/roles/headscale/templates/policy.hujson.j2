@@ -1,0 +1,17 @@
+// Managed by Ansible (metal/roles/headscale)
+// https://github.com/juanfont/headscale/blob/v{{ headscale_version }}/docs/ref/policy.md
+//
+// No "acls" or "grants": Headscale then allows all traffic between devices.
+{
+  // The homelab subnet router (system/apps/tailscale) registers with this tag
+  "tagOwners": {
+    "tag:router": ["homelab@"]
+  },
+  "autoApprovers": {
+    "routes": {
+{% for route in headscale_router_routes %}
+      "{{ route }}": ["tag:router"]{{ "," if not loop.last }}
+{% endfor %}
+    }
+  }
+}

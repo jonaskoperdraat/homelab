@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Create a single-use key (valid 1 hour) to add a device to the VPN.
+# usage: scripts/vpn-add-device <user>    (users: metal/group_vars/vps.yml)
+
+set -eu
+
+user="${1:?usage: $0 <user>}"
+cd "$(dirname "$0")"
+
+user_id="$(./headscale users list --output json | python3 -c '
+import json, sys
+users = {u["name"]: u["id"] for u in json.load(sys.stdin) or []}
+if sys.argv[1] not in users:
+    sys.exit(f"Unknown user {sys.argv[1]!r}, known: {sorted(users)}")
+print(users[sys.argv[1]])
+' "${user}")"
+
+key="$(./headscale preauthkeys create --user "${user_id}" --expiration 1h --output json \
+    | python3 -c 'import json, sys; print(json.load(sys.stdin)["key"])')"
+
+cat <<MSG
+Single-use key for ${user}, valid for 1 hour:
+
+  ${key}
+
+In the Tailscale app, use a custom coordination server:
+
+  https://headscale.jonaskoperdraat.nl
+
+and log in with the key above. On the command line:
+
+  tailscale up --login-server https://headscale.jonaskoperdraat.nl --accept-routes --auth-key ${key}
+
+See docs/how-to-guides/vpn.md.
+MSG

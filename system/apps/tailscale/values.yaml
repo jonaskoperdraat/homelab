@@ -1,0 +1,8 @@
+# Subnet router: makes the ingress reachable for devices in the tailnet, which
+# is coordinated by Headscale on the VPS (metal/vps.yml). Registered by
+# scripts/vpn-register-router (run by `make system`).
+image: ghcr.io/tailscale/tailscale:v1.104.4
+hostname: homelab
+loginServer: https://headscale.jonaskoperdraat.nl
+# The ingress addresses (load_balancer_ip_pool in metal/inventories)
+routes: 192.168.88.224/27

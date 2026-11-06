@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# Register the homelab subnet router (system/apps/tailscale) with Headscale,
+# unless it already is. Run by `make system` for production.
+# usage: scripts/vpn-register-router [namespace] [hostname]
+# Expects KUBECONFIG to point at the cluster.
+
+set -eu
+
+namespace="${1:-tailscale}"
+hostname="${2:-homelab}"
+cd "$(dirname "$0")"
+
+node_id="$(./headscale nodes list --output json | python3 -c '
+import json, sys
+for n in json.load(sys.stdin) or []:
+    if n.get("given_name") == sys.argv[1] or n.get("name") == sys.argv[1]:
+        print(n["id"])
+' "${hostname}")"
+
+if kubectl -n "${namespace}" get secret tailscale-state >/dev/null 2>&1; then
+    has_state=true
+else
+    has_state=false
+fi
+
+if [ -n "${node_id}" ] && [ "${has_state}" = true ]; then
+    echo "Router ${hostname} is already registered (node ${node_id})"
+    exit 0
+fi
+
+# Only one side knows the router (cluster or Headscale rebuilt): start over
+if [ -n "${node_id}" ]; then
+    echo "Removing node ${node_id}: its identity is gone from the cluster"
+    ./headscale nodes delete --identifier "${node_id}" --force
+fi
+if [ "${has_state}" = true ]; then
+    echo "Removing the router state: Headscale no longer knows it"
+    kubectl -n "${namespace}" delete secret tailscale-state
+fi
+
+user_id="$(./headscale users list --output json | python3 -c '
+import json, sys
+print({u["name"]: u["id"] for u in json.load(sys.stdin) or []}["homelab"])
+')"
+created="$(./headscale preauthkeys create --user "${user_id}" --tags tag:router --expiration 1h --output json)"
+key="$(printf '%s' "${created}" | python3 -c 'import json, sys; print(json.load(sys.stdin)["key"])')"
+key_id="$(printf '%s' "${created}" | python3 -c 'import json, sys; print(json.load(sys.stdin)["id"])')"
+# Don't leave a valid key behind if the login fails
+trap '[ $? -eq 0 ] || ./headscale preauthkeys expire --id "${key_id}" >/dev/null' EXIT
+
+kubectl -n "${namespace}" create secret generic tailscale-auth \
+    --from-literal=TS_AUTHKEY="${key}" --dry-run=client --output yaml | kubectl apply -f -
+kubectl -n "${namespace}" rollout restart deployment/tailscale
+kubectl -n "${namespace}" rollout status deployment/tailscale --timeout=300s
+
+# Logged in now, so the key is no longer needed (and was single-use anyway)
+kubectl -n "${namespace}" delete secret tailscale-auth
+echo "Router ${hostname} registered"

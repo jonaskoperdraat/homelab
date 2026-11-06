@@ -19,6 +19,16 @@
     mode: "0640"
   notify: Restart Headscale
 
+- name: Configure policy
+  ansible.builtin.template:
+    src: policy.hujson.j2
+    dest: /etc/headscale/policy.hujson
+    owner: root
+    group: headscale
+    mode: "0640"
+    validate: headscale policy check --file %s
+  notify: Restart Headscale
+
 - name: Start Headscale
   ansible.builtin.systemd:
     name: headscale

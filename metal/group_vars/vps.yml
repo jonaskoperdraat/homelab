@@ -8,6 +8,10 @@ headscale_domain: headscale.jonaskoperdraat.nl
 headscale_users:
   - homelab
   - jonas
+  - fenna
+# Routes the homelab subnet router may advertise without manual approval:
+# the ingress (load balancer) addresses
+headscale_router_routes: "{{ load_balancer_ip_pool }}"
 
 # SNI proxy (roles/sni_proxy): server name on port 443 -> backend.
 # Public homelab apps get added here later.

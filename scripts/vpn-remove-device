@@ -1,0 +1,28 @@
+#!/bin/sh
+
+# Remove a device from the VPN, e.g. a lost phone. It loses access at once.
+# usage: scripts/vpn-remove-device            (lists devices)
+#        scripts/vpn-remove-device <name>
+
+set -eu
+
+cd "$(dirname "$0")"
+
+if [ $# -eq 0 ]; then
+    ./headscale nodes list
+    exit 0
+fi
+
+name="${1}"
+id="$(./headscale nodes list --output json | python3 -c '
+import json, sys
+nodes = json.load(sys.stdin) or []
+names = [n.get("given_name") for n in nodes]
+matches = [n for n in nodes if sys.argv[1] in (n.get("given_name"), n.get("name"))]
+if len(matches) != 1:
+    sys.exit(f"Expected one device named {sys.argv[1]!r}, found {len(matches)}; devices: {names}")
+print(matches[0]["id"])
+' "${name}")"
+
+./headscale nodes delete --identifier "${id}" --force
+echo "Removed ${name}; it can no longer reach the VPN."

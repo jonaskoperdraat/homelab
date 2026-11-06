@@ -8,7 +8,7 @@ export KUBECONFIG = $(shell pwd)/../metal/kubeconfig$(if $(filter dev,$(env)),-d
 
 .PHONY: *
 
-default: bootstrap $(if $(filter dev,$(env)),,external) wait
+default: bootstrap $(if $(filter dev,$(env)),,external vpn) wait
 
 bootstrap:
 	../scripts/check-revision $(revision)
@@ -21,6 +21,11 @@ bootstrap:
 external:
 	@test "$(env)" = prod || { echo "Refusing to apply $@ for env=$(env)"; exit 1; }
 	make -C external
+
+# Register the subnet router (system/apps/tailscale) with Headscale on the VPS
+vpn:
+	@test "$(env)" = prod || { echo "Refusing to run $@ for env=$(env)"; exit 1; }
+	../scripts/vpn-register-router
 
 # Done when every app of this layer is Synced and Healthy
 wait:
