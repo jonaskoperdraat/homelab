@@ -8,6 +8,22 @@ schema: spec-driven
 #   context: |
 #     Designs and tasks must cover Windows, macOS, and Linux
 #     Write all artifacts in Spanish
+context: |
+  Personal homelab, managed with GitOps (Argo CD follows the master branch).
+  - master is production: every push to master deploys. Work happens on a
+    feature branch, is tested on the dev cluster with `make env=dev switch`,
+    and only then is merged into master. Tasks must include that dev test.
+  - Fix things properly so a from-scratch build runs start to finish; no
+    temporary workarounds or manual steps left behind.
+  - Never commit environment differences into shared files: use
+    environments/<env>.yml, values-<env>.yaml or templates gated on
+    .Values.environment.
+  - Never print, log or commit secret values. Read secret files only with
+    tools that cannot echo values, and check the output format on dummy data
+    first.
+  - Scripts that change production (Headscale, the cluster, DNS) must abort
+    when they cannot verify the current state, never treat an error as
+    "nothing there".
 
 # Per-artifact rules (optional)
 # Add custom rules for specific artifacts.
