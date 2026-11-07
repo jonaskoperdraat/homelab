@@ -12,3 +12,5 @@ Chart.lock
 *.pem
 
 .DS_Store
+.idea/
+.claude/settings.local.json
