@@ -5,15 +5,19 @@ export KUBECONFIG = $(shell pwd)/kubeconfig$(if $(filter dev,$(env)),-dev,).yaml
 
 default: $(if $(filter dev,$(env)),k3d,boot cluster)
 
+# boot, cluster and reset take the cluster (and the VPN router in it) down
+direct-route:
+	../scripts/check-direct-route inventories/${env}.yml
+
 ~/.ssh/id_ed25519:
 	ssh-keygen -t ed25519 -P '' -f "$@"
 
-boot: ~/.ssh/id_ed25519
+boot: direct-route ~/.ssh/id_ed25519
 	ansible-playbook \
 		--inventory inventories/${env}.yml \
 		boot.yml
 
-cluster:
+cluster: direct-route
 	ansible-playbook \
 		--inventory inventories/${env}.yml \
 		cluster.yml
@@ -25,7 +29,7 @@ vps:
 		vps.yml
 
 # Destroy the cluster but keep the OS, see reset.yml
-reset:
+reset: direct-route
 	ansible-playbook \
 		--inventory inventories/${env}.yml \
 		reset.yml

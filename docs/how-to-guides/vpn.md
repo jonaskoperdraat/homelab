@@ -27,11 +27,13 @@ Admins can run `kubectl`, `make` and Ansible from anywhere. That depends on
 the cluster: the subnet router runs in it, so with the cluster down, the nodes
 are only reachable at home.
 
-**At home**, devices may send this traffic through the VPN as well, since its
-routes are more specific than the home network. That breaks SSH to the nodes
-while the cluster is down, so quit Tailscale on your computer before
-`make -C metal reset` or `make -C metal cluster`. Check with
-`route -n get 192.168.88.41` (macOS): `interface: utun…` means through the VPN.
+**At home**, connected devices send this traffic through the VPN as well, since
+its routes are more specific than the home network. That breaks SSH to the
+nodes while the cluster is down, so `make -C metal boot`, `cluster` and `reset`
+refuse to run while the nodes are reached through a tunnel
+(`scripts/check-direct-route`): quit Tailscale and run them from home. Check
+by hand with `route -n get 192.168.88.41` (macOS): `interface: utun…` means
+through the VPN.
 
 Run the scripts below from the repository, inside `nix develop`.
 

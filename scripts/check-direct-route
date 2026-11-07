@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# Refuse to continue unless the metal hosts are reached directly, not through
+# a VPN tunnel. With Tailscale connected, the subnet router's /32 routes to the
+# nodes beat the home network, so SSH goes through the router in the cluster:
+# the very cluster that boot, cluster and reset take down.
+# usage: scripts/check-direct-route <inventory>
+
+set -eu
+
+inventory="${1}"
+
+hosts="$(ansible-inventory --inventory "${inventory}" --playbook-dir "$(dirname "$0")/../metal" --list | python3 -c '
+import json, sys
+inventory = json.load(sys.stdin)
+def hosts(group):
+    entry = inventory.get(group, {})
+    yield from entry.get("hosts", [])
+    for child in entry.get("children", []):
+        yield from hosts(child)
+for host in sorted(set(hosts("metal"))):
+    print(inventory["_meta"]["hostvars"][host].get("ansible_host", host))
+')"
+
+interface() {
+    case "$(uname)" in
+        Darwin) route -n get "$1" | sed -n 's/.*interface: //p' ;;
+        *) ip route get "$1" | sed -n 's/.* dev \([^ ]*\).*/\1/p' ;;
+    esac
+}
+
+tunneled=""
+for host in ${hosts}; do
+    case "$(interface "${host}")" in
+        utun* | tailscale* | tun* | wg*) tunneled="${tunneled} ${host}" ;;
+    esac
+done
+
+if [ -n "${tunneled}" ]; then
+    echo "ERROR: reaching${tunneled} through a VPN tunnel. Quit Tailscale and run this from the home network: the tunnel goes through the cluster this changes." >&2
+    exit 1
+fi
